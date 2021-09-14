@@ -1,0 +1,37 @@
+{
+  "env": {
+    "jest": true,
+    "es6": true,
+    "node": true
+  },
+  "plugins": ["import", "prettier", "security", "security-node"],
+  "extends": [
+    "prettier",
+    "airbnb-base",
+    "plugin:import/recommended",
+    "plugin:security/recommended",
+    "plugin:security-node/recommended"
+  ],
+  "rules": {
+    "import/no-unresolved": [0, { "commonjs": true, "amd": true }],
+    "comma-dangle": [
+      0,
+      {
+        "arrays": "always",
+        "objects": "never",
+        "imports": "never",
+        "exports": "never",
+        "functions": "never"
+      }
+    ],
+    "quotes": ["error", "double"],
+    "no-multiple-empty-lines": [
+      "error",
+      {
+        "max": 2,
+        "maxBOF": 1,
+        "maxEOF": 0
+      }
+    ]
+  }
+}
