@@ -36,6 +36,7 @@
 </head>
 <body spellcheck="false">
 <div id="red-ui-editor"></div>
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 <script src="vendor/vendor.js"></script>
 {{#asset.vendorMonaco}}
 <script src="{{ asset.vendorMonaco }}"></script>

@@ -7,6 +7,7 @@ ConfigManager.loadSettings("FLOWBROKER-UI", userConfigFile);
 
 const config = unflatten(ConfigManager.getConfig("FLOWBROKER-UI"));
 
+
 Logger.setTransport("console", {
   level: config.logger.console.level.toLowerCase(),
 });
@@ -21,8 +22,12 @@ if (config.logger.file.enable) {
 }
 Logger.setVerbose(config.logger.verbose);
 
-const logger = new Logger("flowbroker-ui:App");
 
+/*
+  Creating services
+  Roadmap: uses DI Pattern
+*/
+const logger = new Logger("flowbroker-ui:App");
 
 const stateManager = new ServiceStateManager({
   lightship: {
@@ -47,11 +52,12 @@ try { bcrypt = require("bcrypt"); } catch (e) { bcrypt = require("bcryptjs"); }
 const nopt = require("nopt");
 const path = require("path");
 const fs = require("fs-extra");
+
+const settings = require("./config/red-settings");
+
 const RED = require("./app/lib-red");
 
-const settings = require("./app/dojotSettings");
-
-settings.settingsFile = "./app/dojotSettings.js";
+settings.settingsFile = "./config/red-settings.js";
 
 
 let server;
@@ -142,7 +148,7 @@ if (parsedArgs.define) {
       }
     }
   } catch (e) {
-    console.log(`Error processing -D option: ${e.message}`);
+    logger.error(`Error processing -D option: ${e.message}`);
     process.exit();
   }
 }
@@ -153,12 +159,6 @@ if (parsedArgs.verbose) {
 if (parsedArgs.safe || (process.env.NODE_RED_ENABLE_SAFE_MODE && !/^false$/i.test(process.env.NODE_RED_ENABLE_SAFE_MODE))) {
   settings.safeMode = true;
 }
-if (process.env.NODE_RED_ENABLE_PROJECTS) {
-  settings.editorTheme = settings.editorTheme || {};
-  settings.editorTheme.projects = settings.editorTheme.projects || {};
-  settings.editorTheme.projects.enabled = !/^false$/i.test(process.env.NODE_RED_ENABLE_PROJECTS);
-}
-
 
 const defaultServerSettings = {
   "x-powered-by": false
@@ -168,10 +168,18 @@ for (const eOption in serverSettings) {
   app.set(eOption, serverSettings[eOption]);
 }
 
+/* Update EditorTheme variables */
+const editorClientDir = path.dirname(require.resolve("./app/@node-red/editor-client"));
+settings.editorTheme.header.image = `${editorClientDir}/public/${settings.editorTheme.header.image}`;
+settings.editorTheme.page.css = [`${editorClientDir}/public/${settings.editorTheme.page.css[0]}`];
+settings.editorTheme.page.scripts = [`${editorClientDir}/public/${settings.editorTheme.page.scripts[0]}`];
+
 
 // Delay logging of (translated) messages until the RED object has been initialized
 const delayedLogItems = [];
 
+/*  Enabling HTTPS based on setting file
+*/
 let startupHttps = settings.https;
 if (typeof startupHttps === "function") {
   // Get the result of the function, because createServer doesn't accept functions as input
@@ -225,7 +233,8 @@ httpsPromise.then((startupHttps) => {
           delayedLogItems.push({ type: "info", id: "server.https.refresh-interval", params: { interval: httpsRefreshInterval } });
           setInterval(() => {
             try {
-              // Get the result of the function, because createServer doesn't accept functions as input
+              // Get the result of the function, because
+              // createServer doesn't accept functions as input
               Promise.resolve(settings.https()).then((refreshedHttps) => {
                 if (refreshedHttps) {
                   // The key/cert needs to be updated in the NodeJs http(s) server, when no key/cert is yet available or when the key/cert has changed.
@@ -236,14 +245,14 @@ httpsPromise.then((startupHttps) => {
                   // Only update the credentials in the server when key or cert has changed
                   if (updateKey || updateCert) {
                     server.setSecureContext(refreshedHttps);
-                    RED.log.info(RED.log._("server.https.settings-refreshed"));
+                    logger.info(RED.log._("server.https.settings-refreshed"));
                   }
                 }
               }).catch((err) => {
-                RED.log.error(RED.log._("server.https.refresh-failed", { message: err }));
+                logger.error(RED.log._("server.https.refresh-failed", { message: err }));
               });
             } catch (err) {
-              RED.log.error(RED.log._("server.https.refresh-failed", { message: err }));
+              logger.error(RED.log._("server.https.refresh-failed", { message: err }));
             }
           }, httpsRefreshInterval * 60 * 60 * 1000);
         } else {
@@ -275,12 +284,9 @@ httpsPromise.then((startupHttps) => {
     settings.disableEditor = settings.disableEditor || false;
   }
 
-  if (settings.httpAdminRoot !== false) {
-    settings.httpAdminRoot = formatRoot(settings.httpAdminRoot || settings.httpRoot || "/");
-    settings.httpAdminAuth = settings.httpAdminAuth || settings.httpAuth;
-  } else {
-    settings.disableEditor = true;
-  }
+  // settings.httpAdminRoot
+  settings.httpAdminRoot = formatRoot(settings.httpAdminRoot || settings.httpRoot || "/");
+  settings.httpAdminAuth = settings.httpAdminAuth || settings.httpAuth;
 
   if (settings.httpNodeRoot !== false) {
     settings.httpNodeRoot = formatRoot(settings.httpNodeRoot || settings.httpRoot || "/");
@@ -291,7 +297,6 @@ httpsPromise.then((startupHttps) => {
   */
   settings.uiPort = config.flowui.port;
   settings.uiHost = config.flowui.host;
-
   if (flowFile) {
     settings.flowFile = flowFile;
   }
@@ -300,6 +305,7 @@ httpsPromise.then((startupHttps) => {
   }
 
   try {
+    // initializes the Node-RED
     logger.info("Initializing Node-RED.");
     RED.init(server, settings);
   } catch (err) {
@@ -316,7 +322,7 @@ httpsPromise.then((startupHttps) => {
     const basicAuth = require("basic-auth");
     let checkPassword;
     let localCachedPassword;
-    if (pass.length == "32") {
+    if (pass.length === "32") {
       // Assume its a legacy md5 password
       checkPassword = function (p) {
         return crypto.createHash("md5").update(p, "utf8").digest("hex") === pass;
@@ -354,16 +360,19 @@ httpsPromise.then((startupHttps) => {
     };
   }
 
+  /* Setting routes to Express */
   if (settings.httpAdminRoot !== false && settings.httpAdminAuth) {
-    RED.log.warn(RED.log._("server.httpadminauth-deprecated"));
-    app.use(settings.httpAdminRoot, basicAuthMiddleware(settings.httpAdminAuth.user, settings.httpAdminAuth.pass));
+    logger.info(RED.log._("server.httpadminauth-deprecated"));
+    app.use(settings.httpAdminRoot,
+      basicAuthMiddleware(settings.httpAdminAuth.user, settings.httpAdminAuth.pass));
   }
 
-  if (settings.httpAdminRoot !== false) {
-    app.use(settings.httpAdminRoot, RED.httpAdmin);
-  }
+  // Setting /nodered endpoint
+  app.use(settings.httpAdminRoot, RED.httpAdmin);
+
   if (settings.httpNodeRoot !== false && settings.httpNodeAuth) {
-    app.use(settings.httpNodeRoot, basicAuthMiddleware(settings.httpNodeAuth.user, settings.httpNodeAuth.pass));
+    app.use(settings.httpNodeRoot,
+      basicAuthMiddleware(settings.httpNodeAuth.user, settings.httpNodeAuth.pass));
   }
   if (settings.httpNodeRoot !== false) {
     app.use(settings.httpNodeRoot, RED.httpNode);
@@ -382,7 +391,7 @@ httpsPromise.then((startupHttps) => {
       port = settings.uiPort;
     }
 
-    let listenPath = `http${settings.https ? "s" : ""}://${settings.uiHost == "::" ? "localhost" : (settings.uiHost == "0.0.0.0" ? "127.0.0.1" : settings.uiHost)
+    let listenPath = `http${settings.https ? "s" : ""}://${settings.uiHost === "::" ? "localhost" : (settings.uiHost === "0.0.0.0" ? "127.0.0.1" : settings.uiHost)
       }:${port}`;
     if (settings.httpAdminRoot !== false) {
       listenPath += settings.httpAdminRoot;
@@ -398,14 +407,14 @@ httpsPromise.then((startupHttps) => {
       || settings.httpStatic) {
       server.on("error", (err) => {
         if (err.errno === "EADDRINUSE") {
-          RED.log.error(RED.log._("server.unable-to-listen", { listenpath: getListenPath() }));
-          RED.log.error(RED.log._("server.port-in-use"));
+          logger.error(RED.log._("server.unable-to-listen", { listenpath: getListenPath() }));
+          logger.error(RED.log._("server.port-in-use"));
         } else {
-          RED.log.error(RED.log._("server.uncaught-exception"));
+          logger.error(RED.log._("server.uncaught-exception"));
           if (err.stack) {
-            RED.log.error(err.stack);
+            logger.error(err.stack);
           } else {
-            RED.log.error(err);
+            logger.error(err);
           }
         }
         process.exit(1);
@@ -418,21 +427,21 @@ httpsPromise.then((startupHttps) => {
 
       server.listen(settings.uiPort, settings.uiHost, () => {
         if (settings.httpAdminRoot === false) {
-          RED.log.info(RED.log._("server.admin-ui-disabled"));
+          logger.info(RED.log._("server.admin-ui-disabled"));
         }
         settings.serverPort = server.address().port;
         process.title = parsedArgs.title || "node-red";
-        RED.log.info(RED.log._("server.now-running", { listenpath: getListenPath() }));
+        logger.info(RED.log._("server.now-running", { listenpath: getListenPath() }));
       });
     } else {
-      RED.log.info(RED.log._("server.headless-mode"));
+      logger.info(RED.log._("server.headless-mode"));
     }
   }).catch((err) => {
-    RED.log.error(RED.log._("server.failed-to-start"));
+    logger.error(RED.log._("server.failed-to-start"));
     if (err.stack) {
-      RED.log.error(err.stack);
+      logger.error(err.stack);
     } else {
-      RED.log.error(err);
+      logger.error(err);
     }
   });
 
@@ -468,6 +477,6 @@ httpsPromise.then((startupHttps) => {
   process.on("SIGHUP", exitWhenStopped);
   process.on("SIGUSR2", exitWhenStopped); // for nodemon restart
 }).catch((err) => {
-  logger.error(`Failed to get https settings: ${err}`);
-  logger.error(err.stack);
+  logger.error("Failed to get https settings:");
+  logger.error(err.stack || err);
 });

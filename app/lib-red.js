@@ -1,5 +1,3 @@
-const fs = require("fs");
-
 const path = require("path");
 
 const redUtil = require("@node-red/util");
@@ -38,25 +36,15 @@ module.exports = {
       userSettings.coreNodesDir = path.dirname(require.resolve("./@node-red/nodes"));
     }
     redUtil.init(userSettings);
-    if (userSettings.httpAdminRoot !== false) {
-      // Initialise the runtime
-      runtime.init(userSettings, httpServer, api);
-      // Initialise the editor-api
-      api.init(userSettings, httpServer, runtime.storage, runtime);
-      // Attach the runtime admin app to the api admin app
-      api.httpAdmin.use(runtime.httpAdmin);
+    // Initialise the runtime
+    runtime.init(userSettings, httpServer, api);
+    // Initialise the editor-api
+    api.init(userSettings, httpServer, runtime.storage, runtime);
+    // Attach the runtime admin app to the api admin app
+    api.httpAdmin.use(runtime.httpAdmin);
 
-      apiEnabled = true;
-      server = httpServer;
-    } else {
-      runtime.init(userSettings, httpServer);
-      apiEnabled = false;
-      if (httpServer) {
-        server = httpServer;
-      } else {
-        server = null;
-      }
-    }
+    apiEnabled = true;
+    server = httpServer;
   },
   /**
      * Start the Node-RED application.

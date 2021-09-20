@@ -28,6 +28,7 @@ This code is based on Node-Red project, following your schema. Node-RED consists
 | @node-red/editor-client                           | the client-side resources of the Node-RED editor application                                                    |
 
 Check out http://nodered.org/docs/getting-started/ for full instructions about Node-RED.
+The @node-red/registry and @Node-red/utils are used as compiled components.
 
 ## Dependencies
 
@@ -63,6 +64,15 @@ convention.
 | log.file          | Enables logging on file (location: /var/log/flowui-logs-%DATE%.log) | false         | boolean                  | FLOWBROKERUI_LOG_FILE          |
 | log.file.level    | Log level to log on files                                           | info          | string                   | FLOWBROKERUI_LOG_FILE_LEVEL    |
 | log.verbose       | Whether to enable logger verbosity or not                           | false         | boolean                  | FLOWBROKERUI_LOG_VERBOSE       |
+
+#### Frontend Configuration (Editor-UI)
+
+You also should update the Front-end configuration with Dojot's account, applying in file @node-red/editor-client/src/js/dojot-config.js. After the configuration be made, is necessary re-build the image.
+
+| Key      | Purpose                           | Default Value | Valid Values |
+| -------- | --------------------------------- | ------------- | ------------ |
+| user     | User's Dojot                      | admin         | string       |
+| password | Password used to connect to Dojot |               | string       |
 
 ### How to run
 

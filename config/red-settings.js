@@ -122,8 +122,8 @@ module.exports = {
      * The `pass` field is a bcrypt hash of the password.
      * See http://nodered.org/docs/security.html#generating-the-password-hash
      */
-  // httpNodeAuth: {user:"user",pass:"$2a$08$zZWtXTja0fB1pzD4sHCMyOCMYz2Z6dNbM6tl8sJogENOMcxWV9DN."},
-  // httpStaticAuth: {user:"user",pass:"$2a$08$zZWtXTja0fB1pzD4sHCMyOCMYz2Z6dNbM6tl8sJogENOMcxWV9DN."},
+  // httpNodeAuth: {user:"user",pass:"$2a$08$zZWtXTja0fB1pzD4sHMYz2Z6dNbM6tl8sJogENOMcxWV9DN."},
+  // httpStaticAuth: {user:"user",pass:"$2a$08$zZWtXTja0fB1pzD4sHMYz2Z6dNbM6tl8sJogENOMcxWV9DN."},
 
   /** *****************************************************************************
      * Server Settings
@@ -140,7 +140,7 @@ module.exports = {
      ***************************************************************************** */
 
   /** the tcp port that the Node-RED web server is listening on */
-  uiPort: process.env.PORT || 2880,
+  // uiPort: process.env.PORT || 2880,
 
   /** By default, the Node-RED UI accepts connections on all IPv4 interfaces.
      * To listen on all IPv6 addresses, set uiHost to "::",
@@ -148,7 +148,8 @@ module.exports = {
      * example, the following would only allow connections from the local machine.
      */
   // uiHost: "127.0.0.1",
-  storageModule: require("./dojotModule/dojotStorageModule"),
+  storageModule: require("../app/dojotModule/dojotStorageModule"),
+  /* DON'T USE THIS CONFIG BELOW, for Dojot,  always uses config.js file. */
   storageModuleOptions: {
     user: "admin",
     password: "admin",
@@ -170,6 +171,7 @@ module.exports = {
   /** By default, the Node-RED UI is available at http://localhost:1880/
      * The following property can be used to specify a different root path.
      * If set to false, this is disabled.
+     * For Dojot, this always should be setted.
      */
   httpAdminRoot: "/nodered",
 
@@ -245,14 +247,15 @@ module.exports = {
 
   /** Configure the logging output */
   logging: {
-    /** Only console logging is currently supported */
     console: {
       /** Level of logging to be recorded. Options are:
              * fatal - only those errors which make the application unusable should be recorded
              * error - record errors which are deemed fatal for a particular request + fatal errors
              * warn - record problems which are non fatal + errors + fatal errors
-             * info - record information about the general running of the application + warn + error + fatal errors
-             * debug - record information which is more verbose than info + info + warn + error + fatal errors
+             * info - record information about the general running
+             * of the application + warn + error + fatal errors
+             * debug - record information which is more verbose than
+             * info + info + warn + error + fatal errors
              * trace - record very detailed logging + debug + info + warn + error + fatal errors
              * off - turn off all logging (doesn't affect metrics or audit)
              */
@@ -335,17 +338,17 @@ module.exports = {
     // theme: "midnight-red",
     header: {
       title: "Retornar para a Dojot",
-      favicon: "/l/disk0/fangelo/.node-red/favicon.ico",
-      image: "/l/disk0/fangelo/.node-red/logo.png", // or null to remove image
-      url: "http://localhost:8000/" // optional url to make the header text/image a link to this url
+      favicon: "/favicon.ico",
+      image: "dojot.png", // or null to remove image
+      url: "/" // optional url to make the header text/image a link to this url
     },
     page: {
       title: "Dojot - Node-RED",
       css: [
-        "/l/disk0/fangelo/.node-red/themes.css",
+        "theme/themes.css",
       ],
       scripts: [
-        "/l/disk0/fangelo/.node-red/themes.js",
+        "theme/themes.js",
       ]
     },
     deployButton: {

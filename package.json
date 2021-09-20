@@ -13,7 +13,8 @@
   },
   "main": "lib-red.js",
   "scripts": {
-    "start": "node  red.js -s ./app/dojotSettings.js",
+    "start": "node  red.js",
+    "app": "NODE_ENV=production node --unhandled-rejections=strict red.js",
     "test": "grunt",
     "build": "grunt build",
     "dev": "grunt dev",
@@ -32,6 +33,11 @@
     "iot",
     "flowbroker"
   ],
+  "author": {
+    "name": "Francisco Angelo Cabelo",
+    "email": "francisco.a.cabelo@gmail.com",
+    "url": "https://github.com/cfrancisco"
+  },
   "dependencies": {
     "@dojot/microservice-sdk": "^0.1.14",
     "@node-red/registry": "^2.0.6",
