@@ -1,7 +1,7 @@
 # =====================
-#     Base Image
+#     Base Image (LTS)
 # =====================
-FROM node:15.3-alpine AS base
+FROM node:14.17-alpine AS base
 
 # Create app directory
 WORKDIR /opt/flowbroker-ui
@@ -21,7 +21,7 @@ RUN npm run build
 # =====================
 #   Production Image
 # =====================
-FROM node:15.3-alpine
+FROM node:14.17-alpine
 
 WORKDIR /opt/flowbroker-ui
 

@@ -1,5 +1,8 @@
+const path = require("path");
+
 const dojotStorageModule = require("../app/modules/dojot/dojotStorageModule");
 
+const editorClientDir = path.dirname(require.resolve("../app/@node-red/editor-client"));
 /**
  * This is the default settings file provided by Node-RED.
  *
@@ -133,14 +136,14 @@ module.exports = {
      ***************************************************************************** */
 
   /** the tcp port that the Node-RED web server is listening on */
-  // uiPort: process.env.PORT || 2880,
+  uiPort: process.env.PORT || 2880,
 
   /** By default, the Node-RED UI accepts connections on all IPv4 interfaces.
      * To listen on all IPv6 addresses, set uiHost to "::",
      * The following property can be used to listen on a specific interface. For
      * example, the following would only allow connections from the local machine.
      */
-  // uiHost: "127.0.0.1",
+  uiHost: "127.0.0.1",
   storageModule: dojotStorageModule,
   /* DON'T USE THIS CONFIG BELOW, in Dojot environment, uses config.js file. */
   storageModuleOptions: {
@@ -328,16 +331,16 @@ module.exports = {
     header: {
       title: "Retornar para a Dojot",
       favicon: "/favicon.ico",
-      image: "dojot.png", // or null to remove image
+      image: `${editorClientDir}/public/dojot.png`, // or null to remove image
       url: "/" // optional url to make the header text/image a link to this url
     },
     page: {
       title: "Dojot - Node-RED",
       css: [
-        "theme/themes.css",
+        `${editorClientDir}/public/theme/themes.css`,
       ],
       scripts: [
-        "theme/themes.js",
+        `${editorClientDir}/public/theme/themes.js`,
       ]
     },
     deployButton: {

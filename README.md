@@ -59,6 +59,7 @@ The Flowbroker-UI depends of the following Dojot services:
 We propose some improvements to the Flowbroker-UI, aimed at improving the user experience and adding new features. Below are presented some issues to consider:
 
 - Create translation for Portuguese;
+- Creation of example for flows;
 
 ## Running the service
 

@@ -168,12 +168,6 @@ for (const eOption in serverSettings) {
   app.set(eOption, serverSettings[eOption]);
 }
 
-/* Update EditorTheme variables */
-const editorClientDir = path.dirname(require.resolve("./app/@node-red/editor-client"));
-settings.editorTheme.header.image = `${editorClientDir}/public/${settings.editorTheme.header.image}`;
-settings.editorTheme.page.css = [`${editorClientDir}/public/${settings.editorTheme.page.css[0]}`];
-settings.editorTheme.page.scripts = [`${editorClientDir}/public/${settings.editorTheme.page.scripts[0]}`];
-
 
 // Delay logging of (translated) messages until the RED object has been initialized
 const delayedLogItems = [];
@@ -187,6 +181,15 @@ if (typeof startupHttps === "function") {
 }
 const httpsPromise = Promise.resolve(startupHttps);
 
+function getListenPath() {
+  let listenPath = `http${settings.https ? "s" : ""}://${settings.uiHost}:${settings.uiPort}`;
+  if (settings.httpAdminRoot !== false) {
+    listenPath += settings.httpAdminRoot;
+  } else if (settings.httpStatic) {
+    listenPath += "/";
+  }
+  return listenPath;
+}
 
 /*
   Creating HTTP Service
@@ -213,12 +216,21 @@ httpsPromise.then((startupHttps) => {
     // Emitted when an error occurs. Unlike net.Socket, the 'close' event will not
     // be emitted directly following this event unless server.close() is manually called.
     server.on("error", (err) => {
+      stateManager.signalNotReady("server");
       logger.error("Server experienced an error:", err);
-      if (err.code === "EADDRINUSE") {
-        throw err;
+      if (err.errno === "EADDRINUSE") {
+        logger.error(RED.log._("server.unable-to-listen", { listenpath: getListenPath() }));
+        logger.error(RED.log._("server.port-in-use"));
+      } else {
+        logger.error(RED.log._("server.uncaught-exception"));
+        if (err.stack) {
+          logger.error(err.stack);
+        } else {
+          logger.error(err);
+        }
       }
+      process.exit(1);
     });
-
 
     if (settings.httpsRefreshInterval) {
       let httpsRefreshInterval = parseFloat(settings.httpsRefreshInterval) || 12;
@@ -237,10 +249,12 @@ httpsPromise.then((startupHttps) => {
               // createServer doesn't accept functions as input
               Promise.resolve(settings.https()).then((refreshedHttps) => {
                 if (refreshedHttps) {
-                  // The key/cert needs to be updated in the NodeJs http(s) server, when no key/cert is yet available or when the key/cert has changed.
+                  // The key/cert needs to be updated in the NodeJs
+                  // http(s) server, when no key/cert is yet available
+                  // or when the key/cert has changed.
                   // Note that the refreshed key/cert can be supplied as a string or a buffer.
-                  const updateKey = (server.key == undefined || (Buffer.isBuffer(server.key) && !server.key.equals(refreshedHttps.key)) || (typeof server.key === "string" && server.key != refreshedHttps.key));
-                  const updateCert = (server.cert == undefined || (Buffer.isBuffer(server.cert) && !server.cert.equals(refreshedHttps.cert)) || (typeof server.cert === "string" && server.cert != refreshedHttps.cert));
+                  const updateKey = (server.key === undefined || (Buffer.isBuffer(server.key) && !server.key.equals(refreshedHttps.key)) || (typeof server.key === "string" && server.key !== refreshedHttps.key));
+                  const updateCert = (server.cert === undefined || (Buffer.isBuffer(server.cert) && !server.cert.equals(refreshedHttps.cert)) || (typeof server.cert === "string" && server.cert !== refreshedHttps.cert));
 
                   // Only update the credentials in the server when key or cert has changed
                   if (updateKey || updateCert) {
@@ -268,10 +282,10 @@ httpsPromise.then((startupHttps) => {
   server.setMaxListeners(0);
 
   function formatRoot(root) {
-    if (root[0] != "/") {
+    if (root[0] !== "/") {
       root = `/${root}`;
     }
-    if (root.slice(-1) != "/") {
+    if (root.slice(-1) !== "/") {
       root += "/";
     }
     return root;
@@ -284,7 +298,7 @@ httpsPromise.then((startupHttps) => {
     settings.disableEditor = settings.disableEditor || false;
   }
 
-  // settings.httpAdminRoot
+  // Setting endpoints to httpAdminRoot and httpAdminAdmin
   settings.httpAdminRoot = formatRoot(settings.httpAdminRoot || settings.httpRoot || "/");
   settings.httpAdminAuth = settings.httpAdminAuth || settings.httpAuth;
 
@@ -293,7 +307,9 @@ httpsPromise.then((startupHttps) => {
     settings.httpNodeAuth = settings.httpNodeAuth || settings.httpAuth;
   }
 
-  /* Override settings config using the dojot configuration file schema.
+  /*
+    Override settings config using the dojot configuration
+    file schema.
   */
   settings.uiPort = config.flowui.port;
   settings.uiHost = config.flowui.host;
@@ -308,8 +324,10 @@ httpsPromise.then((startupHttps) => {
     // initializes the Node-RED
     logger.info("Initializing Node-RED.");
     RED.init(server, settings);
+    stateManager.signalReady("RED-instance");
   } catch (err) {
     logger.error("Failed to start server:");
+    stateManager.signalNotReady("RED-instance");
     if (err.stack) {
       logger.error(err.stack);
     } else {
@@ -385,64 +403,32 @@ httpsPromise.then((startupHttps) => {
     app.use("/", express.static(settings.httpStatic));
   }
 
-  function getListenPath() {
-    let port = settings.serverPort;
-    if (port === undefined) {
-      port = settings.uiPort;
-    }
-
-    let listenPath = `http${settings.https ? "s" : ""}://${settings.uiHost === "::" ? "localhost" : (settings.uiHost === "0.0.0.0" ? "127.0.0.1" : settings.uiHost)
-      }:${port}`;
-    if (settings.httpAdminRoot !== false) {
-      listenPath += settings.httpAdminRoot;
-    } else if (settings.httpStatic) {
-      listenPath += "/";
-    }
-    return listenPath;
-  }
-
+  /*
+    Node-RED instance successfully loaded.
+  */
   RED.start().then(() => {
-    if (settings.httpAdminRoot !== false
-      || settings.httpNodeRoot !== false
-      || settings.httpStatic) {
-      server.on("error", (err) => {
-        if (err.errno === "EADDRINUSE") {
-          logger.error(RED.log._("server.unable-to-listen", { listenpath: getListenPath() }));
-          logger.error(RED.log._("server.port-in-use"));
-        } else {
-          logger.error(RED.log._("server.uncaught-exception"));
-          if (err.stack) {
-            logger.error(err.stack);
-          } else {
-            logger.error(err);
-          }
-        }
-        process.exit(1);
-      });
+    stateManager.signalReady("RED-instance");
 
-      // Log all the delayed messages, since they can be translated at this point
-      delayedLogItems.forEach((delayedLogItem, index) => {
-        RED.log[delayedLogItem.type](RED.log._(delayedLogItem.id, delayedLogItem.params || {}));
-      });
+    // Log all the delayed messages, since they can be translated at this point
+    delayedLogItems.forEach((delayedLogItem) => {
+      RED.log[delayedLogItem.type](RED.log._(delayedLogItem.id, delayedLogItem.params || {}));
+    });
 
-      server.listen(settings.uiPort, settings.uiHost, () => {
-        if (settings.httpAdminRoot === false) {
-          logger.info(RED.log._("server.admin-ui-disabled"));
-        }
-        settings.serverPort = server.address().port;
-        process.title = parsedArgs.title || "node-red";
-        logger.info(RED.log._("server.now-running", { listenpath: getListenPath() }));
-      });
-    } else {
-      logger.info(RED.log._("server.headless-mode"));
-    }
+    server.listen(settings.uiPort, settings.uiHost, () => {
+      stateManager.signalReady("server");
+
+      if (settings.httpAdminRoot === false) {
+        logger.info(RED.log._("server.admin-ui-disabled"));
+      }
+      settings.serverPort = server.address().port;
+      process.title = parsedArgs.title || "node-red";
+      logger.info(RED.log._("server.now-running", { listenpath: getListenPath() }));
+    });
   }).catch((err) => {
+    stateManager.signalNotReady("server");
+
     logger.error(RED.log._("server.failed-to-start"));
-    if (err.stack) {
-      logger.error(err.stack);
-    } else {
-      logger.error(err);
-    }
+    logger.error(err.stack || err);
   });
 
   process.on("unhandledRejection", async (reason) => {
