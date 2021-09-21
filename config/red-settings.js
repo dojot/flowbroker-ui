@@ -1,3 +1,5 @@
+const dojotStorageModule = require("../app/dojotModule/dojotStorageModule");
+
 /**
  * This is the default settings file provided by Node-RED.
  *
@@ -9,15 +11,6 @@
  *
  * For more information about individual settings, refer to the documentation:
  *    https://nodered.org/docs/user-guide/runtime/configuration
- *
- * The settings are split into the following sections:
- *  - Flow File and User Directory Settings
- *  - Security
- *  - Server Settings
- *  - Runtime Settings
- *  - Editor Settings
- *  - Node Settings
- *
  * */
 
 module.exports = {
@@ -53,7 +46,7 @@ module.exports = {
      * the user's home directory. To use a different location, the following
      * property can be used
      */
-  // userDir: '/home/nol/.node-red/',
+  userDir: "/opt/flowbroker-ui/node-red-user-configuration/",
 
   /** Node-RED scans the `nodes` directory in the userDir to find local node files.
      * The following property can be used to specify an additional directory to scan.
@@ -148,14 +141,9 @@ module.exports = {
      * example, the following would only allow connections from the local machine.
      */
   // uiHost: "127.0.0.1",
-  storageModule: require("../app/dojotModule/dojotStorageModule"),
-  /* DON'T USE THIS CONFIG BELOW, for Dojot,  always uses config.js file. */
+  storageModule: dojotStorageModule,
+  /* DON'T USE THIS CONFIG BELOW, in Dojot environment, uses config.js file. */
   storageModuleOptions: {
-    user: "admin",
-    password: "admin",
-    tenant: "dojot",
-    hostname: "http://localhost",
-    port: "8000",
   },
   /** The maximum size of HTTP request that will be accepted by the runtime api.
      * Default: 5mb
@@ -297,7 +285,8 @@ module.exports = {
      * will install/load. It can use '*' as a wildcard that matches anything.
      */
   externalModules: {
-    // autoInstall: false,   /** Whether the runtime will attempt to automatically install missing modules */
+    autoInstall: false,
+    /** Whether the runtime will attempt to automatically install missing modules */
     // autoInstallRetry: 30, /** Interval, in seconds, between reinstall attempts */
     palette: { /** Configuration for the Palette Manager */
       allowInstall: false, /** Enable the Palette Manager in the editor */
@@ -355,7 +344,15 @@ module.exports = {
       type: "simple",
       label: "Save all Flows",
     },
-    menu: { // Hide unwanted menu items by id. see packages/node_modules/@node-red/editor-client/src/js/red.js:loadEditor for complete list
+    menu: {
+      // Hide unwanted menu items by id.
+      // see packages/node_modules/@node-red/editor-client/src/js/red.js:loadEditor
+      // for complete list
+      "menu-item-config-nodes": false,
+      "menu-item-group": false,
+      "menu-item-subflow": false,
+      "menu-item-import-library": false,
+      "menu-item-export-library": false,
       "menu-item-help": {
         label: "Dojot",
         url: "https://dojotdocs.readthedocs.io/pt_BR/stable/index.html"
@@ -368,7 +365,7 @@ module.exports = {
              * If not set, the following default order is used:
              */
       editable: true,
-      categories: ["input", "subflows", "common", "function", "network", "output", "sequence", "parser", "storage"],
+      categories: ["input", "subflows", "common", "function", "network", "output", "category", "storage"],
     },
     projects: {
       /** To enable the Projects feature, set this value to true */

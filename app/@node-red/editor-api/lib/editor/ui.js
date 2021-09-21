@@ -26,7 +26,6 @@ const theme = require("./theme");
 let runtimeAPI;
 const editorClientDir = path.dirname(require.resolve("./../../../editor-client"));
 
-console.log("editorClientDir", editorClientDir);
 const defaultNodeIcon = path.join(editorClientDir, "public", "red", "images", "icons", "arrow-in.svg");
 const editorTemplatePath = path.join(editorClientDir, "templates", "index.mst");
 let editorTemplate;

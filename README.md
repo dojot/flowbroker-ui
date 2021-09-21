@@ -1,17 +1,21 @@
 # Flowbroker-UI
 
-The **Flowbroker-UI** is a UI for Flowbroker service based in NodeRed.
+[![License badge](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![Docker badge - flowbroker-ui](https://img.shields.io/docker/pulls/dojot/flowbroker-ui.svg)](https://hub.docker.com/r/dojot/flowbroker-ui/)
+
+The **Flowbroker-UI** is a UI for Dojots' Flowbroker service based in NodeRed. A flow is a sequence of functional blocks (nodes) to process incoming particular events or device messages. With a flow you can dynamically analyze each new message in order to apply validations, infer information, trigger actions or notifications.
 
 ## **Table of Contents**
 
 1. [Overview](#overview)
 2. [Dependencies](#dependencies)
-3. [Running the service](#running-the-service)
+3. [Roadmap](#roadmap)
+4. [Running the service](#running-the-service)
    1. [Configurations](#configurations)
       1. [General Configurations](#general-configurations)
    2. [How to run](#how-to-run)
-4. [Documentation](#documentation)
-5. [Issues and help](#issues-and-help)
+5. [Documentation](#documentation)
+6. [Issues and help](#issues-and-help)
 
 ## Overview
 
@@ -28,11 +32,33 @@ This code is based on Node-Red project, following your schema. Node-RED consists
 | @node-red/editor-client                           | the client-side resources of the Node-RED editor application                                                    |
 
 Check out http://nodered.org/docs/getting-started/ for full instructions about Node-RED.
-The @node-red/registry and @Node-red/utils are used as compiled components.
+The @node-red/registry, @node-red/runtime, and @Node-red/utils are used as compiled components.
+
+Furthermore, the UI no longer offered the following features (created by a standard version node-RED):
+
+    - context
+    - config-nodes
+    - groups
+    - subflow
+    - import-library
+    - export-library
 
 ## Dependencies
 
-The Flowbroker-UI only depends of the Dojot Service Flowbroker.
+The Flowbroker-UI depends of the following Dojot services:
+
+    - Auth
+    - DeviceManager
+    - DataBroker
+    - Flowbroker
+    - Flowbroker-context-manager
+    - Kafka
+
+## Roadmap
+
+We propose some improvements to the Flowbroker-UI, aimed at improving the user experience and adding new features. Below are presented some issues to consider:
+
+- Create translation for Portuguese;
 
 ## Running the service
 
@@ -65,14 +91,16 @@ convention.
 | log.file.level    | Log level to log on files                                           | info          | string                   | FLOWBROKERUI_LOG_FILE_LEVEL    |
 | log.verbose       | Whether to enable logger verbosity or not                           | false         | boolean                  | FLOWBROKERUI_LOG_VERBOSE       |
 
+Besides that, you can also check the red-setting.js file in order to customize Node-RED configurations. All the variables are explained in https://nodered.org/docs/user-guide/runtime/configuration#editor-configuration.
+
 #### Frontend Configuration (Editor-UI)
 
 You also should update the Front-end configuration with Dojot's account, applying in file @node-red/editor-client/src/js/dojot-config.js. After the configuration be made, is necessary re-build the image.
 
-| Key      | Purpose                           | Default Value | Valid Values |
-| -------- | --------------------------------- | ------------- | ------------ |
-| user     | User's Dojot                      | admin         | string       |
-| password | Password used to connect to Dojot |               | string       |
+| Key      | Purpose                            | Default Value | Valid Values |
+| -------- | ---------------------------------- | ------------- | ------------ |
+| user     | Internal Management Dojot username | admin         | string       |
+| password | Password used to connect to Dojot  |               | string       |
 
 ### How to run
 
@@ -100,6 +128,7 @@ docker push <username>/flowbroker-ui:<tag>
 Check the documentation for more information:
 
 - [Latest dojot platform documentation](https://dojotdocs.readthedocs.io/en/latest)
+- [Latest Tutorial Using flow builder](https://dojotdocs.readthedocs.io/en/latest/flow.html)
 
 ## Issues and help
 

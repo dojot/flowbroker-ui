@@ -1,7 +1,10 @@
-const { Logger } = require("@dojot/microservice-sdk");
+const { Logger, ConfigManager } = require("@dojot/microservice-sdk");
+
+const { unflatten } = require("flat");
 
 const DojotHandler = require("./DojotHandler");
 
+const config = unflatten(ConfigManager.getConfig("FLOWBROKER-UI"));
 
 /**
  * This module bind the Node-Red's storage schema to Dojot
@@ -9,17 +12,14 @@ const DojotHandler = require("./DojotHandler");
  */
 const storageModule = {
 
-  init(_settings) {
-    if (_settings.storageModuleOptions == null || _settings.storageModuleOptions.tenant == null) {
+  init() {
+    if (config.dojot == null || config.dojot.tenant == null) {
       throw new Error("Dojot storage module required parameters are not defined.");
     }
     this.logger = new Logger("flowbroker-ui:storageModule");
-    this.dojotHandler = new DojotHandler(_settings.storageModuleOptions);
-
-
+    this.dojotHandler = new DojotHandler(config.dojot);
     this.logger.info("Initialized.");
   },
-
   /**
  * request flows from DojotHandler
  * @returns {Promise.<array>} a list of installed flows on Dojot
@@ -37,33 +37,33 @@ const storageModule = {
   },
 
   getCredentials() {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
       resolve({});
     });
   },
 
-  saveCredentials(credentials) {
+  saveCredentials() {
     return Promise.resolve();
   },
 
   getSettings() {
     return [];
   },
-  saveSettings(settings) {
+  saveSettings() {
     return [];
   },
   getSessions() {
     return [];
   },
-  saveSessions(sessions) {
+  saveSessions() {
     return [];
   },
 
-  getLibraryEntry(type, path) {
+  getLibraryEntry() {
     return [];
   },
 
-  saveLibraryEntry(type, path, meta, body) {
+  saveLibraryEntry() {
     return [];
   }
 };

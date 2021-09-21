@@ -2,9 +2,11 @@ const path = require("path");
 
 const redUtil = require("@node-red/util");
 
+const runtime = require("@node-red/runtime");
+
 const api = require("./@node-red/editor-api/lib");
 
-const runtime = require("./@node-red/runtime/lib");
+// const runtime = require("./@node-red/runtime/lib");
 
 let server = null;
 

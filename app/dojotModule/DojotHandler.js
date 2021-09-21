@@ -15,7 +15,7 @@ class DojotHandler {
   *
   * @param {String} configs.user User to login in Dojot
   * @param {String} configs.password Password to login in Dojot
-  * @param {String} configs.hostname Dojot's hostname
+  * @param {String} configs.host Dojot's hostname
   * @param {String} configs.port Dojot's port
   *
   * @constructor
@@ -24,8 +24,8 @@ class DojotHandler {
     this.tenant = configs.tenant;
     this.logger = new Logger("flowbroker-ui:DojotHandler");
     this.path = "flows/v1/flow";
-    this.url = `${configs.hostname}:${configs.port}/${this.path}`;
-    this.host = `${configs.hostname}:${configs.port}`;
+    this.flowUrl = `${configs.host}:${configs.port}/${this.path}`;
+    this.baseUrl = `${configs.host}:${configs.port}`;
     this.user = configs.user;
     this.password = configs.password;
   }
@@ -37,7 +37,7 @@ class DojotHandler {
   async init() {
     try {
       this.logger.info("Requesting Token to Dojot.");
-      const res = await axios.post(`${this.host}/auth/`,
+      const res = await axios.post(`${this.baseUrl}/auth/`,
         { username: this.user, passwd: this.password },
         { accept: "application/json" });
       this.token = res.data.jwt;
@@ -57,10 +57,10 @@ class DojotHandler {
    *
    */
   getFlows() {
-    this.logger.info(`Requesting Flows from Dojot using URL: ${this.url}`);
+    this.logger.info(`Requesting Flows from Dojot using URL: ${this.flowUrl}`);
     return new Promise((resolve, reject) => {
       // create and return a promise
-      axios.get(this.url, this.config)
+      axios.get(this.flowUrl, this.config)
         .then((response) => {
           const dataReceived = castDojotToFlows(response.data.flows);
           this.logger.info("Flows received.");
@@ -106,7 +106,7 @@ class DojotHandler {
  * @param {object} flow The flow to be removed.
  */
   removeFlow(flow) {
-    return axios.delete(`${this.url}/${flow.id}`,
+    return axios.delete(`${this.flowUrl}/${flow.id}`,
       this.config)
       .then(() => {
         this.logger.info(`Flow ${flow.name} successfully removed from Dojot.`);
@@ -122,7 +122,7 @@ class DojotHandler {
    * @param {object} flow A flow to be saved in Dojot
    */
   saveFlow(flow) {
-    return axios.post(this.url,
+    return axios.post(this.flowUrl,
       flow,
       this.config)
       .then(() => {
@@ -139,7 +139,7 @@ class DojotHandler {
  * @param {object} flow A flow to be updated in Dojot
  */
   updateFlow(flow) {
-    return axios.put(`${this.url}/${flow.id}`,
+    return axios.put(`${this.flowUrl}/${flow.id}`,
       flow,
       this.config)
       .then(() => {
