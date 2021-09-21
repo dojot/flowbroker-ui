@@ -4,9 +4,7 @@ const redUtil = require("@node-red/util");
 
 const runtime = require("@node-red/runtime");
 
-const api = require("./@node-red/editor-api/lib");
-
-// const runtime = require("./@node-red/runtime/lib");
+const api = require("../../@node-red/editor-api/lib");
 
 let server = null;
 
@@ -34,9 +32,7 @@ module.exports = {
       httpServer = null;
     }
 
-    if (!userSettings.coreNodesDir) {
-      userSettings.coreNodesDir = path.dirname(require.resolve("./@node-red/nodes"));
-    }
+    userSettings.coreNodesDir = path.dirname(require.resolve("../../@node-red/nodes"));
     redUtil.init(userSettings);
     // Initialise the runtime
     runtime.init(userSettings, httpServer, api);
@@ -65,6 +61,7 @@ module.exports = {
       if (apiEnabled) {
         return api.start();
       }
+      return Promise.resolve();
     });
     startPromise._then = startPromise.then;
     startPromise.then = function (resolve, reject) {
@@ -95,6 +92,7 @@ module.exports = {
       if (apiEnabled) {
         return api.stop();
       }
+      return Promise.resolve();
     });
   },
 

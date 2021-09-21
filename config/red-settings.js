@@ -1,4 +1,4 @@
-const dojotStorageModule = require("../app/dojotModule/dojotStorageModule");
+const dojotStorageModule = require("../app/modules/dojot/dojotStorageModule");
 
 /**
  * This is the default settings file provided by Node-RED.
@@ -231,7 +231,7 @@ module.exports = {
      * Available languages include: en-US (default), ja, de, zh-CN, zh-TW, ru, ko
      * Some languages are more complete than others.
      */
-  // lang: "de",
+  lang: "en-US",
 
   /** Configure the logging output */
   logging: {

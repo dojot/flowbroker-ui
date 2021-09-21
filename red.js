@@ -55,7 +55,7 @@ const fs = require("fs-extra");
 
 const settings = require("./config/red-settings");
 
-const RED = require("./app/lib-red");
+const RED = require("./app/modules/RED/lib-red");
 
 settings.settingsFile = "./config/red-settings.js";
 
