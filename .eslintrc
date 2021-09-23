@@ -1,0 +1,43 @@
+{
+  "globals": { "RED": true, "localStorage": true },
+  "env": {
+    "browser": true,
+    "jest": true,
+    "es6": true,
+    "node": true,
+    "jquery": true
+  },
+  "plugins": ["import", "prettier", "security", "security-node"],
+  "extends": [
+    "prettier",
+    "airbnb-base",
+    "plugin:import/recommended",
+    "plugin:security/recommended",
+    "plugin:security-node/recommended"
+  ],
+  "rules": {
+    "func-names": 0,
+    "no-underscore-dangle": "off",
+    "no-param-reassign": "off",
+    "import/no-unresolved": [0, { "commonjs": true, "amd": true }],
+    "comma-dangle": [
+      0,
+      {
+        "arrays": "always",
+        "objects": "never",
+        "imports": "never",
+        "exports": "never",
+        "functions": "never"
+      }
+    ],
+    "quotes": ["error", "double"],
+    "no-multiple-empty-lines": [
+      "error",
+      {
+        "max": 2,
+        "maxBOF": 1,
+        "maxEOF": 0
+      }
+    ]
+  }
+}
