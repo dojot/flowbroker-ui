@@ -13,20 +13,24 @@
 </script>
 
         <script type="text/x-red" data-help-name="change">
-            <p>Set, change, delete or move properties of a message, flow context or global context.</p>
-            <p>The node can specify multiple rules that will be applied in turn.</p>
-            <p>The available operations are:</p>
-            <ul>
-                <li><b>Set</b> - set a property. The value can be a variety of different types, or
-                    can be taken from an existing message or context property.</li>
-                <li><b>Change</b> - search &amp; replace parts of the property. If regular expressions
-                    are enabled, the <b>replace with</b> property can include capture groups, for
-                    example <code>$1</code>. Replace will only change the <b>type</b> if there
-                    is a complete match.</li>
-                <li><b>Delete</b> - delete a property.</li>
-                <li><b>Move</b> - move or rename a property.</li>
-            </ul>
+            <p>
+                Change node is used to copy or assign values to an output, i. e., copy values of a message attributes to a dictionary that will be assigned to virtual device.
+            </p>
+            
+            <h3>Inputs</h3>
+            <dl class="message-properties">
+                <dt class="mandatory">Name <span class="property-type">optional</span></dt>
+                <dd>Name of the node.</dd>
+                <dt class="mandatory">msg <span class="property-type">required</span></dt>
+                <dd>
+                    Definition of the data structure that will be sent to
+                    the next node and will receive the value set on the to field.
+                </dd>
+                <dt class="mandatory">to <span class="property-type">required</span></dt>
+                <dd>Assignment or copy of values.</dd>
+            </dl>
 
+            <small><strong>Note</strong>: More than one rule can be assign by clicking on +add below the rules box.</small>
         </script>
 
         <script type="text/javascript">
@@ -76,7 +80,7 @@
                 }
             }
         },
-            paletteLabel:  RED._('dojot/change:title'),
+            paletteLabel:  RED._('dojot/change:change'),
             labelStyle: function () {
             return this.name ? "node_label_italic" : "";
         },

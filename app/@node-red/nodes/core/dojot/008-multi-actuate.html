@@ -25,13 +25,51 @@
     </div>
     <div class="form-row">
         <label for="node-input-attrs"><i class="fa fa-cube"></i> <span data-i18n="multi-actuate.label.source"></label>
-        <input type="text" id="node-input-attrs" style=""></input>
+        <input type="text" id="node-input-attrs">
         <input type="hidden" id="node-input-msgFieldType">
     </div>
 </script>
 
 <script type="text/x-red" data-help-name="multi actuate">
-    <p>Set the value of a virtual device, based on the results of the previous operations on the flow.</p>
+    <p>This nodes allows send messages to a real device.</p>
+    <p>As example we could actuate to turn the light off in a lamp that receives actuation via Dojot.</p>
+    <h3>Inputs</h3>
+    <dl class="message-properties">
+        <dt class="mandatory">Name <span class="property-type">optional</span></dt>
+        <dd>Name of the node</dd>
+        <dt class="mandatory">Action <span class="property-type">required</span></dt>
+        <dd>
+            which device a message will be sent to. Options are:
+            <ul>
+                <li>
+                  <u>The device that triggered the flow</u>: this will send a message to
+                  the same device that sent the message which triggered this flow.
+                </li>
+                <li>
+                  <u>Specific device(s)</u>: which device(s) the message will be sent to.
+                </li>
+                <li>
+                  <u>Device(s) defined during the flow</u>: which device(s) the message will be
+                  sent to. This is referenced by a list of values, just as with output
+                  values (msg.list_of_devices).
+                </li>
+              </ul>
+        </dd>
+        <dt class="mandatory">Device <span class="property-type">required</span></dt>
+        <dd>
+            Select “The device that triggered the flow” will
+            make the device that was the entry-point be the end-point of the flow.
+            “Specific device” any chosen device wil be the output of the flow and “a
+            device defined during the flow” will make a device that the flow selected
+            during the execution the endpoint.
+        </dd>
+        <dt class="mandatory">Source <span class="property-type">required</span></dt>
+        <dd>Data structure that will be mapped as message to device out.</dd>
+    </dl>
+    <h3>Outputs</h3>
+    <dl class="message-properties">
+        <dd>The message sent to device.</dd>
+    </dl>
 </script>
 
 <script type="text/javascript">
