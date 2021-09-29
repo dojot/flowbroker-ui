@@ -1,14 +1,12 @@
-
 const storageForFlows = {};
 
 /**
-* Converting NodeRed's Flows to Dojot's Flows
-*
-* @param {Array} flows NodeRed's Flows
-*/
+ * Converting NodeRed's Flows to Dojot's Flows
+ *
+ * @param {Array} flows NodeRed's Flows
+ */
 const castFlowsToDojot = (flows) => {
   const flowsElements = JSON.parse(JSON.stringify(storageForFlows));
-  // console.log("storageForFlows", storageForFlows);
   flows.forEach((flow) => {
     if (flow.z !== undefined) {
       flowsElements[flow.z].flow.push(flow);
@@ -31,10 +29,10 @@ const castFlowsToDojot = (flows) => {
 };
 
 /**
-* Converting Dojot's Flows to NodeRed's Flows
-*
-* @param {Array} flows Dojot's Flows
-*/
+ * Converting Dojot's Flows to NodeRed's Flows
+ *
+ * @param {Array} flows Dojot's Flows
+ */
 const castDojotToFlows = (flows) => {
   const myFlows = [];
   flows.forEach((flow) => {
@@ -58,9 +56,7 @@ const castDojotToFlows = (flows) => {
     myFlows.push(...flowList);
   });
 
-  // console.log(myFlows);
   return myFlows;
 };
-
 
 module.exports = { castFlowsToDojot, castDojotToFlows };

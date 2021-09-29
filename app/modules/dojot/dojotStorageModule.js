@@ -11,20 +11,21 @@ const config = unflatten(ConfigManager.getConfig("FLOWBROKER-UI"));
  * @class
  */
 const storageModule = {
-
   init() {
     if (config.dojot == null || config.dojot.tenant == null) {
-      throw new Error("Dojot storage module required parameters are not defined.");
+      throw new Error(
+        "Dojot storage module required parameters are not defined.",
+      );
     }
     this.logger = new Logger("flowbroker-ui:storageModule");
     this.dojotHandler = new DojotHandler(config.dojot);
     this.logger.info("Initialized.");
   },
   /**
- * request flows from DojotHandler
- * @returns {Promise.<array>} a list of installed flows on Dojot
- *
- */
+   * request flows from DojotHandler
+   * @returns {Promise.<array>} a list of installed flows on Dojot
+   *
+   */
   getFlows: function async() {
     return (async () => {
       await this.dojotHandler.init();
@@ -65,7 +66,7 @@ const storageModule = {
 
   saveLibraryEntry() {
     return [];
-  }
+  },
 };
 
 module.exports = storageModule;

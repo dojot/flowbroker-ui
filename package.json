@@ -15,6 +15,7 @@
   "scripts": {
     "start": "FLOWUI_USER_CONFIG_FILE=development.conf node red.js",
     "app": "NODE_ENV=production node red.js",
+    "lint": "eslint . --ext .js,.jsx",
     "test": "grunt",
     "build": "grunt build",
     "dev": "grunt dev",

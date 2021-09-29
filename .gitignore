@@ -137,4 +137,8 @@ dist
 
 # Yarn.lock
 
-#.yarn.lock
+.yarn.lock
+
+
+# editor-ui Built
+app/@node-red/editor-client/public/red/

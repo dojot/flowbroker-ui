@@ -39,6 +39,9 @@ const stateManager = new ServiceStateManager({
   },
 });
 
+stateManager.registerService("server");
+
+stateManager.registerService("RED-instance");
 
 /*
 
