@@ -3,6 +3,7 @@ const { Logger, ConfigManager, ServiceStateManager } = require("@dojot/microserv
 const { unflatten } = require("flat");
 
 const userConfigFile = process.env.FLOWUI_USER_CONFIG_FILE || "production.conf";
+
 ConfigManager.loadSettings("FLOWBROKER-UI", userConfigFile);
 
 const config = unflatten(ConfigManager.getConfig("FLOWBROKER-UI"));

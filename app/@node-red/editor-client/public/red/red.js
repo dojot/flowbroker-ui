@@ -1299,17 +1299,48 @@ const RED = (function () {
         trigger: trigger
     }
 })();
+;const StorageService = {
+
+  isAuthenticated() {
+    return localStorage.getItem("TOKEN_KEY") !== null;
+  },
+  getToken() {
+    return localStorage.getItem("TOKEN_KEY");
+  },
+  doLogin(token) {
+    const [generalInfo, userInfo] = token.split(".");
+    localStorage.setItem("GENERAL_INFO", generalInfo);
+    localStorage.setItem("USER_INFO", userInfo);
+    localStorage.setItem("TOKEN_KEY", token);
+  },
+  doLogout() {
+    localStorage.removeItem("GENERAL_INFO");
+    localStorage.removeItem("USER_INFO");
+    localStorage.removeItem("TOKEN_KEY");
+  }
+};
 ;const dojotConfig = {
   host: "http://localhost:8000",
   user: "admin",
   password: "admin",
 };
-;const DojotService = {
+;/* eslint-disable no-undef */
+const DojotService = {
+  async requestToken() {
+    if (!StorageService.isAuthenticated()) {
+      await DojotService.getToken();
+    }
+    return StorageService.getToken();
+  },
   async getToken() {
     try {
       const res = await axios.post(`${dojotConfig.host}/auth/`,
-        { username: dojotConfig.user, passwd: dojotConfig.password },
+        {
+          username: dojotConfig.user,
+          passwd: dojotConfig.password
+        },
         { accept: "application/json" });
+      StorageService.doLogin(res.data.jwt);
       return res.data.jwt;
     } catch (err) {
       console.error(`Call Http.service - Requesting error: ${err.toString()}`);
@@ -1318,7 +1349,7 @@ const RED = (function () {
   },
   async getDevices(params = "") {
     try {
-      const token = await DojotService.getToken();
+      const token = await DojotService.requestToken();
       const config = {
         accept: "application/json",
         headers: { Authorization: `Bearer ${token}` },
@@ -1334,7 +1365,7 @@ const RED = (function () {
   },
   async getTemplates(params = "") {
     try {
-      const token = await DojotService.getToken();
+      const token = await DojotService.requestToken();
       const config = {
         accept: "application/json",
         headers: { Authorization: `Bearer ${token}` },

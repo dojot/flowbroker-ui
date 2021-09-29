@@ -1,10 +1,20 @@
+/* eslint-disable no-undef */
 const DojotService = {
-  async getToken() {
+  async requestToken() {
+    if (!StorageService.isAuthenticated()) {
+      await DojotService.fetchToken();
+    }
+    return StorageService.getToken();
+  },
+  async fetchToken() {
     try {
       const res = await axios.post(`${dojotConfig.host}/auth/`,
-        { username: dojotConfig.user, passwd: dojotConfig.password },
+        {
+          username: dojotConfig.user,
+          passwd: dojotConfig.password
+        },
         { accept: "application/json" });
-      return res.data.jwt;
+      return StorageService.doLogin(res.data.jwt);
     } catch (err) {
       console.error(`Call Http.service - Requesting error: ${err.toString()}`);
       return null;
@@ -12,7 +22,7 @@ const DojotService = {
   },
   async getDevices(params = "") {
     try {
-      const token = await DojotService.getToken();
+      const token = await DojotService.requestToken();
       const config = {
         accept: "application/json",
         headers: { Authorization: `Bearer ${token}` },
@@ -28,7 +38,7 @@ const DojotService = {
   },
   async getTemplates(params = "") {
     try {
-      const token = await DojotService.getToken();
+      const token = await DojotService.requestToken();
       const config = {
         accept: "application/json",
         headers: { Authorization: `Bearer ${token}` },

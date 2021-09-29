@@ -138,6 +138,7 @@ module.exports = function (grunt) {
           "app/@node-red/editor-client/src/js/red.js",
           "app/@node-red/editor-client/src/js/events.js",
           "app/@node-red/editor-client/src/js/hooks.js",
+          "app/@node-red/editor-client/src/js/storage.js",
           "app/@node-red/editor-client/src/js/dojot-config.js",
           "app/@node-red/editor-client/src/js/dojot.js",
           "app/@node-red/editor-client/src/js/i18n.js",
