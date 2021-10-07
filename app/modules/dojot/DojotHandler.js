@@ -4,28 +4,25 @@ const axios = require("axios");
 
 const { castFlowsToDojot, castDojotToFlows } = require("./utils");
 
-
 /**
  * Class representing a DojotHandler
  * @class
  */
 class DojotHandler {
   /**
-  * Creates a MQTTClient
-  *
-  * @param {String} configs.user User to login in Dojot
-  * @param {String} configs.password Password to login in Dojot
-  * @param {String} configs.host Dojot's hostname
-  * @param {String} configs.port Dojot's port
-  *
-  * @constructor
-  */
+   * Creates a MQTTClient
+   *
+   * @param {String} configs.user User to login in Dojot
+   * @param {String} configs.password Password to login in Dojot
+   * @param {String} configs.flow.url Flow service URL
+   * @param {String} configs.auth.url Auth service URL
+   *
+   * @constructor
+   */
   constructor(configs) {
     this.tenant = configs.tenant;
     this.logger = new Logger("flowbroker-ui:DojotHandler");
-    this.path = "flows/v1/flow";
-    this.flowUrl = `${configs.host}:${configs.port}/${this.path}`;
-    this.baseUrl = `${configs.host}:${configs.port}`;
+    this.configs = configs;
     this.user = configs.user;
     this.password = configs.password;
   }
@@ -37,9 +34,11 @@ class DojotHandler {
   async init() {
     try {
       this.logger.info("Requesting Token to Dojot.");
-      const res = await axios.post(`${this.baseUrl}/auth/`,
+      const res = await axios.post(
+        this.configs.auth.url,
         { username: this.user, passwd: this.password },
-        { accept: "application/json" });
+        { accept: "application/json" },
+      );
       this.token = res.data.jwt;
       this.logger.debug(`Token was created. Using ${this.token}`);
 
@@ -48,7 +47,9 @@ class DojotHandler {
         headers: { Authorization: `Bearer ${this.token}` },
       };
     } catch (err) {
-      this.logger.error(`Call DojotHandler - Requesting error: ${err.toString()}`);
+      this.logger.error(
+        `init DojotHandler - Requesting error: ${err.toString()}`,
+      );
     }
   }
 
@@ -57,22 +58,24 @@ class DojotHandler {
    *
    */
   getFlows() {
-    this.logger.info(`Requesting Flows from Dojot using URL: ${this.flowUrl}`);
+    this.logger.info("Requesting Flows from Dojot.");
     return new Promise((resolve, reject) => {
       // create and return a promise
-      axios.get(this.flowUrl, this.config)
+      axios
+        .get(this.configs.flow.url, this.config)
         .then((response) => {
           const dataReceived = castDojotToFlows(response.data.flows);
           this.logger.info("Flows received.");
           resolve(dataReceived);
         })
         .catch((err) => {
-          this.logger.error(`Call DojotHandler - Requesting error: ${err.toString()}`);
+          this.logger.error(
+            `getFlows DojotHandler - Requesting error: ${err.toString()}`,
+          );
           reject(err.toString());
         });
     });
   }
-
 
   /**
    * Save flows to Dojot.
@@ -101,18 +104,20 @@ class DojotHandler {
   }
 
   /**
- * Remove an flow from Dojot.
- *
- * @param {object} flow The flow to be removed.
- */
+   * Remove an flow from Dojot.
+   *
+   * @param {object} flow The flow to be removed.
+   */
   removeFlow(flow) {
-    return axios.delete(`${this.flowUrl}/${flow.id}`,
-      this.config)
+    return axios
+      .delete(`${this.configs.flow.url}/${flow.id}`, this.config)
       .then(() => {
         this.logger.info(`Flow ${flow.name} successfully removed from Dojot.`);
       })
       .catch((err) => {
-        this.logger.error(`Call DojotHandler - Requesting error: ${err.toString()}`);
+        this.logger.error(
+          `removeFlow DojotHandler - Requesting error: ${err.toString()}`,
+        );
       });
   }
 
@@ -122,34 +127,35 @@ class DojotHandler {
    * @param {object} flow A flow to be saved in Dojot
    */
   saveFlow(flow) {
-    return axios.post(this.flowUrl,
-      flow,
-      this.config)
+    return axios
+      .post(this.configs.flow.url, flow, this.config)
       .then(() => {
         this.logger.info(`Flow ${flow.name} successfully saved to Dojot.`);
       })
       .catch((err) => {
-        this.logger.error(`Call DojotHandler - Requesting error: ${err.toString()}`);
+        this.logger.error(
+          `saveFlow DojotHandler - Requesting error: ${err.toString()}`,
+        );
       });
   }
 
   /**
- * Update flow in Dojot.
- *
- * @param {object} flow A flow to be updated in Dojot
- */
+   * Update flow in Dojot.
+   *
+   * @param {object} flow A flow to be updated in Dojot
+   */
   updateFlow(flow) {
-    return axios.put(`${this.flowUrl}/${flow.id}`,
-      flow,
-      this.config)
+    return axios
+      .put(`${this.configs.flow.url}/${flow.id}`, flow, this.config)
       .then(() => {
         this.logger.info(`Flow ${flow.name} successfully updated in Dojot.`);
       })
       .catch((err) => {
-        this.logger.error(`Call DojotHandler - Requesting error: ${err.toString()}`);
+        this.logger.error(
+          `updateFlow DojotHandler - Requesting error: ${err.toString()}`,
+        );
       });
   }
 }
-
 
 module.exports = DojotHandler;

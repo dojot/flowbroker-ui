@@ -3,7 +3,7 @@
 [![License badge](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Docker badge - flowbroker-ui](https://img.shields.io/docker/pulls/dojot/flowbroker-ui.svg)](https://hub.docker.com/r/dojot/flowbroker-ui/)
 
-The **Flowbroker-UI** is a UI for Dojots' Flowbroker service based in NodeRed. A flow is a sequence of functional blocks (nodes) to process incoming particular events or device messages. With a flow you can dynamically analyze each new message in order to apply validations, infer information, trigger actions or notifications.
+The **Flowbroker-UI** is a UI for Dojot Flowbroker, a service based in NodeRed. A flow is a sequence of functional blocks (nodes) to process incoming particular events or device messages. With a flow you can dynamically analyze each new message in order to apply validations, infer information, trigger actions or notifications.
 
 ## **Table of Contents**
 
@@ -14,27 +14,28 @@ The **Flowbroker-UI** is a UI for Dojots' Flowbroker service based in NodeRed. A
    1. [Configurations](#configurations)
       1. [General Configurations](#general-configurations)
    2. [How to run](#how-to-run)
-5. [Documentation](#documentation)
-6. [Issues and help](#issues-and-help)
+5. [Creating a new node](#creating-a-new-node)
+6. [Documentation](#documentation)
+7. [Issues and help](#issues-and-help)
 
 ## Overview
 
 This code is based on Node-Red project, following your schema. Node-RED consists of 6 node modules under the `@node-red` scope, which are pulled together by the top-level `node-red` module.
 
-| Module                                            | Description                                                                                                     |
-| ------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
-| [node-red](node-red.html)                         | the main module that pulls together all of the internal modules and provides the executable version of Node-RED |
-| [@node-red/editor-api](@node-red_editor-api.html) | an Express application that serves the Node-RED editor and provides the Admin HTTP API                          |
-| [@node-red/runtime](@node-red_runtime.html)       | the core runtime of Node-RED                                                                                    |
-| [@node-red/util](@node-red_util.html)             | common utilities for the Node-RED runtime and editor modules                                                    |
-| [@node-red/registry](@node-red_registry.html)     | the internal node registry                                                                                      |
-| @node-red/nodes                                   | the default set of core nodes. This module only contains the Node-RED nodes - it does not expose any APIs.      |
-| @node-red/editor-client                           | the client-side resources of the Node-RED editor application                                                    |
+| Module                  | Description                                                                                                     |
+| ----------------------- | --------------------------------------------------------------------------------------------------------------- |
+| node-red                | the main module that pulls together all of the internal modules and provides the executable version of Node-RED |
+| @node-red/editor-api    | an Express application that serves the Node-RED editor and provides the Admin HTTP API                          |
+| @node-red/runtime       | the core runtime of Node-RED                                                                                    |
+| @node-red/util          | common utilities for the Node-RED runtime and editor modules                                                    |
+| @node-red/registry      | the internal node registry                                                                                      |
+| @node-red/nodes         | the default set of core nodes. This module only contains the Node-RED nodes - it does not expose any APIs.      |
+| @node-red/editor-client | the client-side resources of the Node-RED editor application                                                    |
 
 Check out http://nodered.org/docs/getting-started/ for full instructions about Node-RED.
 The @node-red/registry, @node-red/runtime, and @Node-red/utils are used as compiled components.
 
-Furthermore, the UI no longer offered the following features (created by a standard version node-RED):
+Furthermore, the UI no longer offers the standard features provided by Node-RED:
 
     - context
     - config-nodes
@@ -60,6 +61,10 @@ We propose some improvements to the Flowbroker-UI, aimed at improving the user e
 
 - Create translation for Portuguese;
 - Creation of example for flows;
+- Create unit tests for dojotStorageModule;
+- Remove non-used scripts in Gruntfile;
+- Remove basic authentication and other schemas non-used in red.js file;
+- Rechecking license-exceptions.json;
 
 ## Running the service
 
@@ -86,7 +91,7 @@ convention.
 | Key               | Purpose                                                             | Default Value | Valid Values             | Environment variable           |
 | ----------------- | ------------------------------------------------------------------- | ------------- | ------------------------ | ------------------------------ |
 | server.host       | Server address                                                      | 0.0.0.0       | string                   | FLOWBROKERUI_SERVER_HOST       |
-| server.port       | Sever Port                                                          | 3000          | integer                  | FLOWBROKERUI_SERVER_PORT       |
+| server.port       | Sever Port                                                          | 2880          | integer                  | FLOWBROKERUI_SERVER_PORT       |
 | log.console.level | Console logger level                                                | info          | info, debug, error, warn | FLOWBROKERUI_LOG_CONSOLE_LEVEL |
 | log.file          | Enables logging on file (location: /var/log/flowui-logs-%DATE%.log) | false         | boolean                  | FLOWBROKERUI_LOG_FILE          |
 | log.file.level    | Log level to log on files                                           | info          | string                   | FLOWBROKERUI_LOG_FILE_LEVEL    |
@@ -96,7 +101,7 @@ Besides that, you can also check the red-setting.js file in order to customize N
 
 #### Frontend Configuration (Editor-UI)
 
-You also should update the Front-end configuration with Dojot's account, applying in file @node-red/editor-client/src/js/dojot-config.js. After the configuration be made, is necessary re-build the image.
+You also should update the Front-end configuration with Dojot's account, applying in file @node-red/editor-client/src/js/dojot-config.js. After to update the configuration, you need rebuild the image.
 
 | Key      | Purpose                            | Default Value | Valid Values |
 | -------- | ---------------------------------- | ------------- | ------------ |
@@ -112,7 +117,7 @@ for more information on installation methods.
 Generate the Docker image:
 
 ```shell
-docker build -t <username>/flowbroker-ui:<tag> -f  .
+docker build -f Dockerfile -t <username>/flowbroker-ui:<tag> .
 ```
 
 Then an image tagged as `<username>/flowbroker-ui:<tag>` will be made available. You can send it to
@@ -123,6 +128,20 @@ docker push <username>/flowbroker-ui:<tag>
 ```
 
 **NOTE THAT** you can use the official image provided by dojot in its [DockerHub page](https://hub.docker.com/r/dojot/flowbroker-ui).
+
+## Creating a new node
+
+It's possible to create new nodes extending the flowbroker functionalities. The process consists of the following 2 steps:
+
+1. At first, adding the new node in dojot's flowbroker service:
+
+- There are two examples and a guide in the Flowbroker library, check the link for more details.
+- https://github.com/dojot/flowbroker/tree/development/lib
+
+2. Secondly, give it a visual representation in flowbroker-ui.
+
+- Check the app/@node-red/nodes/core/node_example and app/@node-red/nodes/core/dojot/ to see some examples.
+- Along with these two files, you also need to add the i18n information to locates/en-US/messages.json
 
 ## Documentation
 
