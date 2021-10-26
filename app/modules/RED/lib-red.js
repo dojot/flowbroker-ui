@@ -1,54 +1,119 @@
-const path = require("path");
+const { Logger } = require("@dojot/microservice-sdk");
 
 const redUtil = require("@node-red/util");
 
-const runtime = require("@node-red/runtime");
+const importFresh = require("import-fresh");
 
-const api = require("../../@node-red/editor-api/lib");
+const MainStorage = require("../storage/MainStorage");
 
-let server = null;
+const api = importFresh("../../@node-red/editor-api/lib");
 
-let apiEnabled = false;
+const logger = new Logger("flowbroker-ui:lib-red");
+
+/* Internal Repository */
+class RepoLibRed {
+  constructor() {
+    this._apiEnabled = null;
+    this._server = null;
+    this._runtime = {};
+    this._tenant = null;
+    return this;
+  }
+
+  get apiEnabled() {
+    return this._apiEnabled;
+  }
+
+  get server() {
+    return this._server;
+  }
+
+  get runtime() {
+    return this._runtime;
+  }
+
+  get tenant() {
+    return this._tenant;
+  }
+
+  get instanceId() {
+    return this._instanceId;
+  }
+
+  set instanceId(val) {
+    this._instanceId = val;
+  }
+
+  set runtime(val) {
+    this._runtime = val;
+  }
+
+  set apiEnabled(val) {
+    this._apiEnabled = val;
+  }
+
+  set server(val) {
+    this._server = val;
+  }
+
+  set tenant(val) {
+    this._tenant = val;
+  }
+}
+const repo = new RepoLibRed();
 
 /**
- * This module provides the full Node-RED application, with both the runtime
- * and editor components built in.
+ * This module provides the full Node-RED application, with both the runtime and
+ *  editor components built in.
  *
- * The API this module exposes allows it to be embedded within another Node.js
- * application.
+ * The API this module exposes allows it to be embedded within another Node.js application.
  *
  * @namespace node-red
  */
 module.exports = {
   /**
-     * Initialise the Node-RED application.
-     * @param {server} httpServer - the HTTP server object to use
-     * @param {Object} userSettings - an object containing the runtime settings
-     * @memberof node-red
-     */
-  init(httpServer, userSettings) {
+   * Initialize the Node-RED application.
+   * @param {server} httpServer - the HTTP server object to use
+   * @param {Object} userSettings - an object containing the runtime settings
+   * @param {Object} runtimeInstance
+   * @memberof node-red
+   */
+  init(httpServer, userSettings, _instanceId, _tenant) {
     if (!userSettings) {
       userSettings = httpServer;
       httpServer = null;
     }
 
-    userSettings.coreNodesDir = path.dirname(require.resolve("../../@node-red/nodes"));
-    redUtil.init(userSettings);
-    // Initialise the runtime
-    runtime.init(userSettings, httpServer, api);
-    // Initialise the editor-api
-    api.init(userSettings, httpServer, runtime.storage, runtime);
-    // Attach the runtime admin app to the api admin app
-    api.httpAdmin.use(runtime.httpAdmin);
+    /* to duplicate runtime data */
+    repo.runtime = importFresh("../../@node-red/runtime/lib");
+    repo.instanceId = _instanceId;
+    repo.tenant = _tenant;
 
-    apiEnabled = true;
-    server = httpServer;
+    // Saving the runtime memory address for specified tenant
+    MainStorage.setByTenant(_tenant, "runtime", repo.runtime);
+
+    redUtil.init(userSettings);
+
+    // Initialize the runtime setting the environment variables
+    repo.runtime.init(userSettings, httpServer, api, _instanceId, _tenant);
+
+    // Initialize the editor-api
+    api.init(userSettings, httpServer, repo.runtime.storage, repo.runtime);
+
+    // Attach the runtime admin app to the api admin app
+    api.httpAdmin.use(repo.runtime.httpAdmin);
+
+    repo.apiEnabled = true;
+    repo.server = httpServer;
+    logger.info("RED Application initialized.", { rid: `tenant/${repo.tenant}` });
   },
+  instanceId: repo.instanceId,
+  tenant: repo.tenant,
   /**
-     * Start the Node-RED application.
-     * @return {Promise} - resolves when complete
-     * @memberof node-red
-     */
+   * Start the Node-RED application.
+   * @return {Promise} - resolves when complete
+   * @memberof node-red
+   */
   start() {
     // The top level red.js has always used 'otherwise' on the promise returned
     // here. This is a non-standard promise function coming from our early use
@@ -57,12 +122,18 @@ module.exports = {
     // But we have the issue that some embedders of Node-RED may have copied our
     // top-level red.js a bit too much.
     //
-    const startPromise = runtime.start().then(() => {
-      if (apiEnabled) {
-        return api.start();
-      }
-      return Promise.resolve();
-    });
+    logger.info("Starting a new RED Application.", { rid: `tenant/${repo.tenant}` });
+
+    const reun = MainStorage.getByTenant(repo.tenant, "runtime");
+    console.log("------------", repo.tenant, reun.tenant, reun._.tenant);
+    const startPromise = MainStorage.getByTenant(repo.tenant, "runtime")
+      .start()
+      .then(() => {
+        if (repo.apiEnabled) {
+          return api.start();
+        }
+        return Promise.resolve();
+      });
     startPromise._then = startPromise.then;
     startPromise.then = function (resolve, reject) {
       const inner = startPromise._then(resolve, reject);
@@ -79,17 +150,17 @@ module.exports = {
     return startPromise;
   },
   /**
-     * Stop the Node-RED application.
-     *
-     * Once called, Node-RED should not be restarted until the Node.JS process is
-     * restarted.
-     *
-     * @return {Promise} - resolves when complete
-     * @memberof node-red
-     */
+   * Stop the Node-RED application.
+   *
+   * Once called, Node-RED should not be restarted until the Node.JS process is
+   * restarted.
+   *
+   * @return {Promise} - resolves when complete
+   * @memberof node-red
+   */
   stop() {
-    return runtime.stop().then(() => {
-      if (apiEnabled) {
+    return repo.runtime.stop().then(() => {
+      if (repo.apiEnabled) {
         return api.stop();
       }
       return Promise.resolve();
@@ -97,97 +168,115 @@ module.exports = {
   },
 
   /**
-     * Logging utilities
-     * @see @node-red/util_log
-     * @memberof node-red
-     */
+   * Logging utilities
+   * @see @node-red/util_log
+   * @memberof node-red
+   */
   log: redUtil.log,
 
   /**
-     * General utilities
-     * @see @node-red/util_util
-     * @memberof node-red
-     */
+   * General utilities
+   * @see @node-red/util_util
+   * @memberof node-red
+   */
   util: redUtil.util,
 
+  /**
+   * This provides access to the internal nodes module of the
+   * runtime. The details of this API remain undocumented as they should not
+   * be used directly.
+   *
+   * Most administrative actions should be performed use the runtime api
+   * under [node-red.runtime]{@link node-red.runtime}.
+   *
+   * @memberof node-red
+   */
+  get nodes() {
+    return repo.runtime._.nodes;
+  },
 
   /**
-     * This provides access to the internal nodes module of the
-     * runtime. The details of this API remain undocumented as they should not
-     * be used directly.
-     *
-     * Most administrative actions should be performed use the runtime api
-     * under [node-red.runtime]{@link node-red.runtime}.
-     *
-     * @memberof node-red
-     */
-  get nodes() { return runtime._.nodes; },
-
-  /**
-     * Runtime events emitter
-     * @see @node-red/util_events
-     * @memberof node-red
-     */
+   * Runtime events emitter
+   * @see @node-red/util_events
+   * @memberof node-red
+   */
   events: redUtil.events,
 
   /**
-     * Runtime hooks engine
-     * @see @node-red/runtime_hooks
-     * @memberof node-red
-     */
-  hooks: runtime.hooks,
-
-
-  /**
-     * This provides access to the internal settings module of the
-     * runtime.
-     *
-     * @memberof node-red
-     */
-  get settings() { return runtime._.settings; },
-
+   * Runtime hooks engine
+   * @see @node-red/runtime_hooks
+   * @memberof node-red
+   */
+  hooks: repo.runtime.hooks,
 
   /**
-     * Get the version of the runtime
-     * @return {String} - the runtime version
-     * @function
-     * @memberof node-red
-     */
-  get version() { return runtime._.version; },
-
-
-  /**
-     * The express application for the Editor Admin API
-     * @type ExpressApplication
-     * @memberof node-red
-     */
-  get httpAdmin() { return api.httpAdmin; },
+   * This provides access to the internal settings module of the
+   * runtime.
+   *
+   * @memberof node-red
+   */
+  get settings() {
+    return repo.runtime._.settings;
+  },
 
   /**
-     * The express application for HTTP Nodes
-     * @type ExpressApplication
-     * @memberof node-red
-     */
-  get httpNode() { return runtime.httpNode; },
+   * Get the version of the runtime
+   * @return {String} - the runtime version
+   * @function
+   * @memberof node-red
+   */
+  get version() {
+    return repo.runtime._.version;
+  },
 
   /**
-     * The HTTP Server used by the runtime
-     * @type HTTPServer
-     * @memberof node-red
-     */
-  get server() { return server; },
+   * The express application for the Editor Admin API
+   * @type ExpressApplication
+   * @memberof node-red
+   */
+  get httpAdmin() {
+    return api.httpAdmin;
+  },
 
   /**
-     * The runtime api
-     * @see @node-red/runtime
-     * @memberof node-red
-     */
-  runtime,
+   * The express application for HTTP Nodes
+   * @type ExpressApplication
+   * @memberof node-red
+   */
+  get httpNode() {
+    return repo.runtime.httpNode;
+  },
 
   /**
-     * The editor authentication api.
-     * @see @node-red/editor-api_auth
-     * @memberof node-red
-     */
-  auth: api.auth
+   * The HTTP Server used by the runtime
+   * @type HTTPServer
+   * @memberof node-red
+   */
+  get server() {
+    return repo.server;
+  },
+
+  /**
+   * The runtime api getter
+   * @see @node-red/runtime
+   * @memberof node-red
+   */
+  get runtime() {
+    return repo.runtime;
+  },
+  /**
+   * The runtime api setter
+   * @see @node-red/runtime
+   * @memberof node-red
+   */
+  set runtime(rt) {
+    repo.runtime = rt;
+  },
+
+  /**
+   * The editor authentication api.
+   * @see @node-red/editor-api_auth
+   * @memberof node-red
+   */
+  auth: api.auth,
 };

@@ -45,9 +45,7 @@ const RED = (function () {
       cache: false,
       url: "plugins",
       success(data) {
-        const configs = data
-          .trim()
-          .split(/(?=<!-- --- \[red-plugin:\S+\] --- -->)/);
+        const configs = data.trim().split(/(?=<!-- --- \[red-plugin:\S+\] --- -->)/);
         const totalCount = configs.length;
         var stepConfig = function () {
           // loader.reportProgress(RED._("event.loadNodes",{count:(totalCount-configs.length)+"/"+totalCount}), 30 + ((totalCount-configs.length)/totalCount)*40 )
@@ -64,7 +62,7 @@ const RED = (function () {
   }
 
   function appendConfig(config, moduleIdMatch, targetContainer, done) {
-    done = done || function () { };
+    done = done || function () {};
     let moduleId;
     if (moduleIdMatch) {
       moduleId = moduleIdMatch[1];
@@ -97,10 +95,7 @@ const RED = (function () {
           newScript.src = RED.settings.apiRootUrl + srcUrl;
           hasDeferred = true;
         } else {
-          if (
-            /\/ace.js$/.test(srcUrl)
-            || /\/ext-language_tools.js$/.test(srcUrl)
-          ) {
+          if (/\/ace.js$/.test(srcUrl) || /\/ext-language_tools.js$/.test(srcUrl)) {
             // Block any attempts to load ace.js from a CDN - this will
             // break the version of ace included in the editor.
             // At the time of commit, the contrib-python nodes did this.
@@ -196,9 +191,7 @@ const RED = (function () {
       cache: false,
       url: "nodes",
       success(data) {
-        const configs = data
-          .trim()
-          .split(/(?=<!-- --- \[red-module:\S+\] --- -->)/);
+        const configs = data.trim().split(/(?=<!-- --- \[red-module:\S+\] --- -->)/);
         const totalCount = configs.length;
 
         var stepConfig = function () {
@@ -329,7 +322,6 @@ const RED = (function () {
         });
         return;
       }
-
       if (msg.text) {
         msg.default = msg.text;
         let text = RED._(msg.text, msg);
@@ -351,9 +343,7 @@ const RED = (function () {
               },
             ];
           } else if (msg.error === "missing-types") {
-            text += `<ul><li>${msg.types
-              .map(RED.utils.sanitize)
-              .join("</li><li>")}</li></ul>`;
+            text += `<ul><li>${msg.types.map(RED.utils.sanitize).join("</li><li>")}</li></ul>`;
             if (RED.projects.getActiveProject()) {
               options.buttons = [
                 {
@@ -378,10 +368,9 @@ const RED = (function () {
           } else if (msg.error === "missing-modules") {
             text += `<ul><li>${msg.modules
               .map(
-                (m) => RED.utils.sanitize(m.module)
-                  + (m.error
-                    ? ` - <small>${RED.utils.sanitize(`${m.error}`)}</small>`
-                    : ""),
+                (m) =>
+                  RED.utils.sanitize(m.module) +
+                  (m.error ? ` - <small>${RED.utils.sanitize(`${m.error}`)}</small>` : ""),
               )
               .join("</li><li>")}</li></ul>`;
             options.buttons = [
@@ -400,9 +389,7 @@ const RED = (function () {
                   {
                     text: RED._("notification.project.setupCredentials"),
                     click() {
-                      persistentNotifications[
-                        notificationId
-                      ].hideNotification();
+                      persistentNotifications[notificationId].hideNotification();
                       RED.projects.showCredentialsPrompt();
                     },
                   },
@@ -493,11 +480,7 @@ const RED = (function () {
       const parts = topic.split("/");
       const node = RED.nodes.node(parts[1]);
       if (node) {
-        if (
-          msg.hasOwnProperty("text")
-          && msg.text !== null
-          && /^[a-zA-Z]/.test(msg.text)
-        ) {
+        if (msg.hasOwnProperty("text") && msg.text !== null && /^[a-zA-Z]/.test(msg.text)) {
           msg.text = node._(msg.text.toString(), {
             defaultValue: msg.text.toString(),
           });
@@ -526,12 +509,9 @@ const RED = (function () {
           });
         });
         if (addedTypes.length) {
-          typeList = `<ul><li>${addedTypes
-            .map(RED.utils.sanitize)
-            .join("</li><li>")}</li></ul>`;
+          typeList = `<ul><li>${addedTypes.map(RED.utils.sanitize).join("</li><li>")}</li></ul>`;
           RED.notify(
-            RED._("palette.event.nodeAdded", { count: addedTypes.length })
-            + typeList,
+            RED._("palette.event.nodeAdded", { count: addedTypes.length }) + typeList,
             "success",
           );
         }
@@ -541,12 +521,9 @@ const RED = (function () {
           m = msg[i];
           info = RED.nodes.removeNodeSet(m.id);
           if (info.added) {
-            typeList = `<ul><li>${m.types
-              .map(RED.utils.sanitize)
-              .join("</li><li>")}</li></ul>`;
+            typeList = `<ul><li>${m.types.map(RED.utils.sanitize).join("</li><li>")}</li></ul>`;
             RED.notify(
-              RED._("palette.event.nodeRemoved", { count: m.types.length })
-              + typeList,
+              RED._("palette.event.nodeRemoved", { count: m.types.length }) + typeList,
               "success",
             );
           }
@@ -557,23 +534,17 @@ const RED = (function () {
           info = RED.nodes.getNodeSet(msg.id);
           if (info.added) {
             RED.nodes.enableNodeSet(msg.id);
-            typeList = `<ul><li>${msg.types
-              .map(RED.utils.sanitize)
-              .join("</li><li>")}</li></ul>`;
+            typeList = `<ul><li>${msg.types.map(RED.utils.sanitize).join("</li><li>")}</li></ul>`;
             RED.notify(
-              RED._("palette.event.nodeEnabled", { count: msg.types.length })
-              + typeList,
+              RED._("palette.event.nodeEnabled", { count: msg.types.length }) + typeList,
               "success",
             );
           } else {
             $.get(`nodes/${msg.id}`, (data) => {
               appendNodeConfig(data);
-              typeList = `<ul><li>${msg.types
-                .map(RED.utils.sanitize)
-                .join("</li><li>")}</li></ul>`;
+              typeList = `<ul><li>${msg.types.map(RED.utils.sanitize).join("</li><li>")}</li></ul>`;
               RED.notify(
-                RED._("palette.event.nodeAdded", { count: msg.types.length })
-                + typeList,
+                RED._("palette.event.nodeAdded", { count: msg.types.length }) + typeList,
                 "success",
               );
             });
@@ -582,12 +553,9 @@ const RED = (function () {
       } else if (topic == "notification/node/disabled") {
         if (msg.types) {
           RED.nodes.disableNodeSet(msg.id);
-          typeList = `<ul><li>${msg.types
-            .map(RED.utils.sanitize)
-            .join("</li><li>")}</li></ul>`;
+          typeList = `<ul><li>${msg.types.map(RED.utils.sanitize).join("</li><li>")}</li></ul>`;
           RED.notify(
-            RED._("palette.event.nodeDisabled", { count: msg.types.length })
-            + typeList,
+            RED._("palette.event.nodeDisabled", { count: msg.types.length }) + typeList,
             "success",
           );
         }
@@ -620,9 +588,10 @@ const RED = (function () {
     $.get("red/about", (data) => {
       // data will be strictly markdown. Any HTML should be escaped.
       data = RED.utils.sanitize(data);
-      const aboutHeader = "<div style=\"text-align:center;\">"
-        + "<img width=\"50px\" src=\"red/images/node-red-icon.svg\" />"
-        + "</div>";
+      const aboutHeader =
+        '<div style="text-align:center;">' +
+        '<img width="50px" src="red/images/node-red-icon.svg" />' +
+        "</div>";
 
       RED.sidebar.help.set(aboutHeader + RED.utils.renderMarkdown(data));
     });
@@ -785,9 +754,7 @@ const RED = (function () {
     });
 
     menuOptions.push(null);
-    if (
-      RED.settings.get("externalModules.palette.allowInstall", true) !== false
-    ) {
+    if (RED.settings.get("externalModules.palette.allowInstall", true) !== false) {
       menuOptions.push({
         id: "menu-item-edit-palette",
         label: RED._("menu.label.editPalette"),
@@ -812,14 +779,8 @@ const RED = (function () {
     }
     menuOptions.push({
       id: "menu-item-help",
-      label: RED.settings.theme(
-        "menu.menu-item-help.label",
-        RED._("menu.label.help"),
-      ),
-      href: RED.settings.theme(
-        "menu.menu-item-help.url",
-        "http://nodered.org/docs",
-      ),
+      label: RED.settings.theme("menu.menu-item-help.label", RED._("menu.label.help")),
+      href: RED.settings.theme("menu.menu-item-help.url", "http://nodered.org/docs"),
     });
     menuOptions.push({
       id: "menu-item-node-red-version",
@@ -828,7 +789,7 @@ const RED = (function () {
     });
 
     $(
-      "<li><a id=\"red-ui-header-button-sidemenu\" class=\"button\" href=\"#\"><i class=\"fa fa-bars\"></i></a></li>",
+      '<li><a id="red-ui-header-button-sidemenu" class="button" href="#"><i class="fa fa-bars"></i></a></li>',
     ).appendTo(".red-ui-header-toolbar");
     RED.menu.init({
       id: "red-ui-header-button-sidemenu",
@@ -848,9 +809,7 @@ const RED = (function () {
     RED.palette.init();
     RED.eventLog.init();
 
-    if (
-      RED.settings.get("externalModules.palette.allowInstall", true) !== false
-    ) {
+    if (RED.settings.get("externalModules.palette.allowInstall", true) !== false) {
       RED.palette.editor.init();
     } else {
       console.log("Palette editor disabled");
@@ -889,24 +848,22 @@ const RED = (function () {
   function buildEditor(options) {
     console.log("options.target", options.target);
 
-    const header = $("<div id=\"red-ui-header\"></div>").appendTo(options.target);
-    let logo = $("<span class=\"red-ui-header-logo\"></span>").appendTo(header);
-    $("<ul class=\"red-ui-header-toolbar hide\"></ul>").appendTo(header);
-    $("<div id=\"red-ui-header-shade\" class=\"hide\"></div>").appendTo(header);
+    const header = $('<div id="red-ui-header"></div>').appendTo(options.target);
+    let logo = $('<span class="red-ui-header-logo"></span>').appendTo(header);
+    $('<ul class="red-ui-header-toolbar hide"></ul>').appendTo(header);
+    $('<div id="red-ui-header-shade" class="hide"></div>').appendTo(header);
     $(
-      "<div id=\"red-ui-main-container\" class=\"red-ui-sidebar-closed hide\">"
-      + "<div id=\"red-ui-workspace\"></div>"
-      + "<div id=\"red-ui-editor-stack\"></div>"
-      + "<div id=\"red-ui-palette\"></div>"
-      + "<div id=\"red-ui-sidebar\"></div>"
-      + "<div id=\"red-ui-sidebar-separator\"></div>"
-      + "</div>",
+      '<div id="red-ui-main-container" class="red-ui-sidebar-closed hide">' +
+        '<div id="red-ui-workspace"></div>' +
+        '<div id="red-ui-editor-stack"></div>' +
+        '<div id="red-ui-palette"></div>' +
+        '<div id="red-ui-sidebar"></div>' +
+        '<div id="red-ui-sidebar-separator"></div>' +
+        "</div>",
     ).appendTo(options.target);
-    $("<div id=\"red-ui-editor-plugin-configs\"></div>").appendTo(options.target);
-    $("<div id=\"red-ui-editor-node-configs\"></div>").appendTo(options.target);
-    $("<div id=\"red-ui-full-shade\" class=\"hide\"></div>").appendTo(
-      options.target,
-    );
+    $('<div id="red-ui-editor-plugin-configs"></div>').appendTo(options.target);
+    $('<div id="red-ui-editor-node-configs"></div>').appendTo(options.target);
+    $('<div id="red-ui-full-shade" class="hide"></div>').appendTo(options.target);
 
     loader.init().appendTo("#red-ui-main-container");
     loader.start("...", 0);
@@ -962,14 +919,10 @@ const RED = (function () {
 
   var loader = {
     init() {
-      const wrapper = $("<div id=\"red-ui-loading-progress\"></div>").hide();
+      const wrapper = $('<div id="red-ui-loading-progress"></div>').hide();
       const container = $("<div>").appendTo(wrapper);
-      const label = $("<div>", { class: "red-ui-loading-bar-label" }).appendTo(
-        container,
-      );
-      const bar = $("<div>", { class: "red-ui-loading-bar" }).appendTo(
-        container,
-      );
+      const label = $("<div>", { class: "red-ui-loading-bar-label" }).appendTo(container);
+      const bar = $("<div>", { class: "red-ui-loading-bar" }).appendTo(container);
       const fill = $("<span>").appendTo(bar);
       return wrapper;
     },
@@ -993,4 +946,4 @@ const RED = (function () {
     init,
     loader,
   };
-}());
+})();

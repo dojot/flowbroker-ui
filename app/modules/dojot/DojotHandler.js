@@ -47,9 +47,7 @@ class DojotHandler {
         headers: { Authorization: `Bearer ${this.token}` },
       };
     } catch (err) {
-      this.logger.error(
-        `init DojotHandler - Requesting error: ${err.toString()}`,
-      );
+      this.logger.error(`init DojotHandler - Requesting error: ${err.toString()}`);
     }
   }
 
@@ -65,13 +63,13 @@ class DojotHandler {
         .get(this.configs.flow.url, this.config)
         .then((response) => {
           const dataReceived = castDojotToFlows(response.data.flows);
-          this.logger.info("Flows received.");
+          this.logger.info(
+            `Received ${dataReceived.filter((data) => data.type === "tab").length} flows. `,
+          );
           resolve(dataReceived);
         })
         .catch((err) => {
-          this.logger.error(
-            `getFlows DojotHandler - Requesting error: ${err.toString()}`,
-          );
+          this.logger.error(`getFlows DojotHandler - Requesting error: ${err.toString()}`);
           reject(err.toString());
         });
     });
@@ -115,9 +113,7 @@ class DojotHandler {
         this.logger.info(`Flow ${flow.name} successfully removed from Dojot.`);
       })
       .catch((err) => {
-        this.logger.error(
-          `removeFlow DojotHandler - Requesting error: ${err.toString()}`,
-        );
+        this.logger.error(`removeFlow DojotHandler - Requesting error: ${err.toString()}`);
       });
   }
 
@@ -133,9 +129,7 @@ class DojotHandler {
         this.logger.info(`Flow ${flow.name} successfully saved to Dojot.`);
       })
       .catch((err) => {
-        this.logger.error(
-          `saveFlow DojotHandler - Requesting error: ${err.toString()}`,
-        );
+        this.logger.error(`saveFlow DojotHandler - Requesting error: ${err.toString()}`);
       });
   }
 
@@ -151,9 +145,7 @@ class DojotHandler {
         this.logger.info(`Flow ${flow.name} successfully updated in Dojot.`);
       })
       .catch((err) => {
-        this.logger.error(
-          `updateFlow DojotHandler - Requesting error: ${err.toString()}`,
-        );
+        this.logger.error(`updateFlow DojotHandler - Requesting error: ${err.toString()}`);
       });
   }
 }

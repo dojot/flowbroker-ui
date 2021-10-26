@@ -3474,7 +3474,7 @@ http-parser-js@>=0.5.1:
   resolved "https://registry.yarnpkg.com/http-parser-js/-/http-parser-js-0.5.3.tgz#01d2709c79d41698bb01d4decc5e9da4e4a033d9"
   integrity sha512-t7hjvef/5HEK7RWTdUzVUhl8zkEu+LlaE0IYzdMuvbSDipxBRpOn4Uhw8ZyECEa808iVT8XCjzo6xmYt4CiLZg==
 
-http-terminator@^3.0.0:
+http-terminator@^3.0.0, http-terminator@^3.0.3:
   version "3.0.3"
   resolved "https://registry.yarnpkg.com/http-terminator/-/http-terminator-3.0.3.tgz#2638c82b0223c13b483f0da8ea2eb73364b9bf6e"
   integrity sha512-rYvizQCjA9h4Lzh334/F7QJx71TOsyvHDxFzPA1+Sh520Wkgz8+C3KmYFwUAzy16pQrhFGg3BhJc5ZlcgixEag==
@@ -3548,7 +3548,7 @@ ignore@^5.1.4:
   resolved "https://registry.yarnpkg.com/ignore/-/ignore-5.1.8.tgz#f150a8b50a34289b33e22f5889abd4d8016f0e57"
   integrity sha512-BMpfD7PpiETpBl/A6S498BaIJ6Y/ABT93ETbby2fP00v4EbvPBXWEoaR1UBPKs3iR53pJY7EtZk5KACI57i1Uw==
 
-import-fresh@^3.0.0, import-fresh@^3.2.1:
+import-fresh@^3.0.0, import-fresh@^3.2.1, import-fresh@^3.3.0:
   version "3.3.0"
   resolved "https://registry.yarnpkg.com/import-fresh/-/import-fresh-3.3.0.tgz#37162c25fcb9ebaa2e6e53d5b4d88ce17d9e0c2b"
   integrity sha512-veYYhQa+D1QBKznvhUHxb8faxlrwUnxseDAbAp457E0wLNio2bOSKnjYDhMj+YiAq61xrMGhQk9iXVk5FzgQMw==
@@ -6802,22 +6802,10 @@ tar-stream@^2.2.0:
     inherits "^2.0.3"
     readable-stream "^3.1.1"
 
-tar@6.1.11, tar@^6.1.0:
+tar@6.1.11, tar@^6.1.0, tar@^6.1.11:
   version "6.1.11"
   resolved "https://registry.yarnpkg.com/tar/-/tar-6.1.11.tgz#6760a38f003afa1b2ffd0ffe9e9abbd0eab3d621"
   integrity sha512-an/KZQzQUkZCkuoAA64hM92X0Urb6VpRhAFllDzz44U2mcD5scmT3zBc4VgVpkugF580+DQn8eAFSyoQt0tznA==
-  dependencies:
-    chownr "^2.0.0"
-    fs-minipass "^2.0.0"
-    minipass "^3.0.0"
-    minizlib "^2.1.1"
-    mkdirp "^1.0.3"
-    yallist "^4.0.0"
-
-tar@6.1.9:
-  version "6.1.9"
-  resolved "https://registry.yarnpkg.com/tar/-/tar-6.1.9.tgz#5646ef51342ac55456b2466e44da810439978db1"
-  integrity sha512-XjLaMNl76o07zqZC/aW4lwegdY07baOH1T8w3AEfrHAdyg/oYO4ctjzEBq9Gy9fEP9oHqLIgvx6zuGDGe+bc8Q==
   dependencies:
     chownr "^2.0.0"
     fs-minipass "^2.0.0"

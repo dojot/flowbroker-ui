@@ -103,10 +103,9 @@ Besides that, you can also check the red-setting.js file in order to customize N
 
 You also should update the Front-end configuration with Dojot's account, applying in file @node-red/editor-client/src/js/dojot-config.js. After to update the configuration, you need rebuild the image.
 
-| Key      | Purpose                            | Default Value | Valid Values |
-| -------- | ---------------------------------- | ------------- | ------------ |
-| user     | Internal Management Dojot username | admin         | string       |
-| password | Password used to connect to Dojot  |               | string       |
+| Key  | Purpose             | Default Value  | Valid Values |
+| ---- | ------------------- | -------------- | ------------ |
+| host | URL to access Dojot | localhost:8000 | string       |
 
 ### How to run
 
