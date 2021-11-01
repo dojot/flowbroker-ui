@@ -1,23 +1,29 @@
 const { unflatten } = require("flat");
 
 const { Logger, ConfigManager, ServiceStateManager } = require("@dojot/microservice-sdk");
-const express = require("express");
-const path = require("path");
-const { HTTPServer } = require("./app/modules/server/HTTPServer");
 
-const { RedFactory } = require("./app/RedFactory");
+const express = require("express");
+
+const path = require("path");
+
+const { v4: uuidv4 } = require("uuid");
+
+const { HTTPServer } = require("./app/server/HTTPServer");
+
+const { RedFactory } = require("./app/modules/red/RedFactory");
+
+const TenantService = require("./app/services/tenants.service");
 
 const userConfigFile = process.env.FLOWUI_USER_CONFIG_FILE || "production.conf";
 
-const http = require("http");
-
-const MainStorage = require("./app/modules/storage/MainStorage");
+const MainStorage = require("./app/repository/MainStorage");
 
 ConfigManager.loadSettings("FLOWBROKER-UI", userConfigFile);
 
 const config = unflatten(ConfigManager.getConfig("FLOWBROKER-UI"));
 
-/* Loggers */
+/**
+ * Configuring Loggers */
 Logger.setTransport("console", {
   level: config.logger.console.level.toLowerCase(),
 });
@@ -32,17 +38,10 @@ if (config.logger.file.enable) {
 }
 Logger.setVerbose(config.logger.verbose);
 
-// global storage
-global.tenantStorage = {};
-/*
-Using Dependency Inversion
-*/
-// const DIContainer = require("./src/DIContainer");
-
-// const container = DIContainer(config);
-
 const logger = new Logger("flowbroker-ui:index");
 
+/**
+ * Configuring State Manager */
 const stateManager = new ServiceStateManager({
   lightship: {
     port: config.server.healthcheck.port,
@@ -52,89 +51,82 @@ const stateManager = new ServiceStateManager({
   },
 });
 
-/*
-   Instantiate Main HTTP Server */
+/**
+ * Instantiate the Main HTTP Server with  Websocket Server */
 const server = new HTTPServer(config.flowui, stateManager);
-stateManager.registerService("wsSocket");
-stateManager.signalReady("wsSocket");
 
-// instantiate Websocket Server
-let httpServer = http.createServer((request, response) => {
-  logger.debug(`${new Date()} Received request for ${request.url}`);
-  response.writeHead(404);
-  response.end();
-});
-httpServer.listen(7000, () => {
-  logger.info(`${new Date()} Server is listening on port 7000`);
-});
-
-MainStorage.webSocketServer = httpServer;
+MainStorage.webSocketServer = server;
 
 /*
-   Load node-RED configuration e override settings
-   config using the dojot configuration
-   file schema.
+   Load node-RED configuration and overriding some configurations using the
+   dojot configuration file schema. It is necessary to internal Node-RED classes
+    uses these data.
   */
 const settings = require("./config/red-settings");
-const RedStorage = require("./app/modules/storage/RedStorage");
 
-settings.uiPort = config.flowui.port;
-settings.uiHost = config.flowui.host;
-settings.serverPort = config.flowui.port;
 settings.settingsFile = "./config/red-settings.js";
 settings.coreNodesDir = path.dirname(require.resolve("./app/@node-red/nodes"));
+
 /*
   Factory used to create new RED instances */
 const redFactory = new RedFactory(stateManager, logger);
 
-/*
-TODO
-Request  DATA
-*/
-const tenantList = ["cabelo", "francisco"];
+(async () => {
+  let tenantList = [];
+  tenantList = await TenantService.getTenants();
+  logger.info(`Tenants retrieved: ${tenantList}`);
 
-// Setting /nodered endpoint to Editor Admin API
-// The path for  Editor Admin API will be the related tenant
-const redInstances = [];
+  /* For each tenant received we create a new RED instance,
+    adding it to our storage.
+  */
+  tenantList.forEach((tenant) => {
+    // Create a HTTP Server to handle the Tenant request
+    const tenantServer = express();
 
-/* For each tenant received we create a new RED instance,
-adding its storage.
-*/
-tenantList.forEach((tenant) => {
-  // Todo
-  // Create a HTTP Server from httpServer.js
-  const tenantServer = express();
+    // Notifying Storage to create a new object for this tenant
+    MainStorage.newTenant(tenant);
 
-  MainStorage.newTenant(tenant);
+    // Creating a new Node-RED application
+    const redInstance = redFactory.create(tenant);
+    MainStorage.setInstance(tenant, redInstance);
 
-  // Creating an application for each tenant
-  const redInstance = redFactory.create(tenant);
-  MainStorage.setInstance(tenant, redInstance);
+    // Setting the tenant properties and initializes the Node-RED
+    redInstance.init(tenantServer, settings, uuidv4(), tenant);
 
-  const strage = new RedStorage(tenant);
+    // Setting routes to Express
+    server.use(`${settings.httpAdminRoot}/${tenant}`, tenantServer);
+    tenantServer.use("/", redInstance.httpAdmin);
 
-  // initializes the Node-RED
-  logger.info(`Initializing Node-RED with ID: ${redInstance.instanceId}`);
-  redInstance.init(tenantServer, settings, redInstance.instanceId, redInstance.tenant);
-
-  // Setting routes to Express
-  server.use(`/${tenant}${settings.httpAdminRoot}`, tenantServer);
-  tenantServer.use("/", redInstance.httpAdmin);
-
-  // Starting Node-RED
-  redInstance.start().then(() => {
-    //  Node-RED instance successfully loaded
-    stateManager.signalReady(`RED-instance-${redInstance.tenant}`);
+    // Starting Node-RED
+    redInstance.start().then(() => {
+      //  Node-RED instance successfully loaded
+      stateManager.signalReady(`RED-instance-${redInstance.tenant}`);
+    });
+    logger.info(`Instantiating RED Application for Tenant ${tenant}`);
   });
-  logger.info(`Instantiating RED Application for Tenant ${tenant}`);
-});
-
-// Starting the main HTTP Server
-server.init();
+  MainStorage.getTenants();
+  // Starting the main HTTP Server
+  server.init();
+})();
 
 /*
       Methods to close the main process
 */
+let stopping = false;
+function exitWhenStopped() {
+  if (!stopping) {
+    stopping = true;
+    MainStorage.getTenants().forEach((tenant) => {
+      const inst = MainStorage.getByTenant(tenant, "redInstance");
+      stateManager.signalNotReady(`RED-instance-${inst.tenant}`);
+      inst.stop().then(() => {
+        process.exit();
+      });
+    });
+    server.close();
+  }
+}
+
 process.on("unhandledRejection", async (reason) => {
   // The 'unhandledRejection' event is emitted whenever a Promise is rejected and
   // no error handler is attached to the promise within a turn of the event loop.
@@ -151,26 +143,10 @@ process.on("uncaughtException", async (ex) => {
   process.kill(process.pid, "SIGTERM");
 });
 
-let stopping = false;
-function exitWhenStopped() {
-  if (!stopping) {
-    stateManager.signalNotReady("wsSocket");
-    stopping = true;
-    tenantList.forEach((tenant) => {
-      const inst = MainStorage.getByTenant(tenant, "redInstance");
-      stateManager.signalNotReady(`RED-instance-${inst.tenant}`);
-      inst.stop().then(() => {
-        process.exit();
-      });
-    });
-    if (httpServer) {
-      httpServer.close();
-      httpServer = null;
-    }
-  }
-}
-
 process.on("SIGINT", exitWhenStopped);
+
 process.on("SIGTERM", exitWhenStopped);
+
 process.on("SIGHUP", exitWhenStopped);
+
 process.on("SIGUSR2", exitWhenStopped); // for nodemon restart

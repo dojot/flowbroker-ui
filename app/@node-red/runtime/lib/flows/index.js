@@ -12,7 +12,7 @@ const { Logger } = require("@dojot/microservice-sdk");
 
 const Flow = require("./Flow");
 
-const MainStorage = require("../../../../modules/storage/MainStorage");
+const MainStorage = require("../../../../repository/MainStorage");
 
 const { deprecated } = typeRegistry;
 
@@ -22,13 +22,11 @@ const credentials = require("../nodes/credentials");
 
 const flowUtil = require("./util");
 
-const logger = new Logger("flowbroker-ui:runtime/lib/flows");
+const logger = new Logger("flowbroker-ui:runtime/flows");
 
 const RepoFlows = require("../../../../repository/RepoFlows");
 
 const repo = new RepoFlows();
-
-// global.tenantStorage = {};
 
 function init(_runtime) {
   if (repo.started) {
@@ -126,7 +124,9 @@ function setFlows(_config, _credentials, type, muteLog, forceStart, user) {
   let newFlowConfig;
   let isLoad = false;
   logger.debug(`Setting Flows with type:${type}`, { rid: `tenant/${repo.tenant}` });
-  console.log("repo.activeFlowConfig: ", repo.activeFlowConfig);
+
+  // sounds that setFlows with type=load the node-RED are only requesting the
+  // flows from its storage, and not aiming save them in the database.
   if (type === "load") {
     isLoad = true;
     configSavePromise = loadFlows(repo.tenant).then((_config) => {
@@ -189,7 +189,9 @@ function setFlows(_config, _credentials, type, muteLog, forceStart, user) {
           credentialsDirty: credsDirty,
           credentials: creds,
         };
-        logger.debug("Requesting  Dojot Storage to save flows. ");
+        logger.debug("Requesting for DojotHandler to save all flows. ", {
+          rid: `tenant/${repo.tenant}`,
+        });
         return MainStorage.getByTenant(repo.tenant, "storage").saveFlows(saveConfig, user);
       });
   }
@@ -271,31 +273,28 @@ function getFlows() {
     rid: `tenant/${repo.tenant}`,
   });
   return repo.activeConfig;
-  /*  console.log(
-    "repo.tenant   ---> ",
-    repo.activeConfig,
-    global.tenantStorage[repo.tenant].activeConfig,
-  );
-  return global.tenantStorage[repo.tenant].activeConfig;
-  */
 }
 
 async function start(type, diff, muteLog) {
   type = type || "full";
   repo.started = true;
   let i;
-  logger.debug("Starting flows...", {
+  const totalNodes = Object.keys(repo.activeFlowConfig.flows).length;
+  logger.info(`Starting flows... total amount of flows: ${totalNodes}`, {
     rid: `tenant/${repo.tenant}`,
   });
+
   // If there are missing types, report them, emit the necessary runtime event and return
   if (repo.activeFlowConfig.missingTypes.length > 0) {
-    logger.info(log._("nodes.flows.missing-types"));
+    logger.error(log._("nodes.flows.missing-types"), {
+      rid: `tenant/${repo.tenant}`,
+    });
     let knownUnknowns = 0;
     for (i = 0; i < repo.activeFlowConfig.missingTypes.length; i++) {
       const nodeType = repo.activeFlowConfig.missingTypes[i];
       const info = deprecated.get(nodeType);
       if (info) {
-        logger.info(
+        logger.error(
           log._("nodes.flows.missing-type-provided", {
             type: repo.activeFlowConfig.missingTypes[i],
             module: info.module,
@@ -307,9 +306,9 @@ async function start(type, diff, muteLog) {
       }
     }
     if (knownUnknowns > 0) {
-      logger.info(log._("nodes.flows.missing-type-install-1"));
-      logger.info("  npm install <module name>");
-      logger.info(log._("nodes.flows.missing-type-install-2"));
+      logger.error(log._("nodes.flows.missing-type-install-1"));
+      logger.error("  npm install <module name>");
+      logger.error(log._("nodes.flows.missing-type-install-2"));
     }
     events.emit("runtime-event", {
       id: "runtime-state",
@@ -326,7 +325,9 @@ async function start(type, diff, muteLog) {
   try {
     await typeRegistry.checkFlowDependencies(repo.activeConfig.flows);
   } catch (err) {
-    console.log("Failed to load external modules required by this flow:", err.message);
+    logger.error(`Failed to load external modules required by this flow:${err.message}`, {
+      rid: `tenant/${repo.tenant}`,
+    });
     const missingModules = [];
     for (i = 0; i < err.length; i++) {
       const errMessage = err[i].error.toString();
@@ -351,12 +352,15 @@ async function start(type, diff, muteLog) {
 
   if (!muteLog) {
     if (type !== "full") {
-      logger.info(log._(`nodes.flows.starting-modified-${type}`));
+      logger.debug(log._(`nodes.flows.starting-modified-${type}`), {
+        rid: `tenant/${repo.tenant}`,
+      });
     } else {
-      logger.info(log._("nodes.flows.starting-flows"));
+      logger.debug(log._("nodes.flows.starting-flows"), {
+        rid: `tenant/${repo.tenant}`,
+      });
     }
   }
-
   events.emit("flows:starting", { config: repo.activeConfig, type, diff });
 
   let id;
@@ -381,11 +385,11 @@ async function start(type, diff, muteLog) {
             repo.activeFlowConfig,
             repo.activeFlowConfig.flows[id],
           );
-          logger.info(`red/nodes/flows.start : starting flow : ${id}`, {
+          logger.debug(`red/nodes/flows.start : starting flow : ${id}`, {
             rid: `tenant/${repo.tenant}`,
           });
         } else {
-          logger.info(`red/nodes/flows.start : not starting disabled flow : ${id}`, {
+          logger.debug(`red/nodes/flows.start : not starting disabled flow : ${id}`, {
             rid: `tenant/${repo.tenant}`,
           });
         }
@@ -444,26 +448,15 @@ async function start(type, diff, muteLog) {
 
   if (!muteLog) {
     if (type !== "full") {
-      logger.info(log._(`nodes.flows.started-modified-${type}`), {
+      logger.debug(log._(`nodes.flows.started-modified-${type}`), {
         rid: `tenant/${repo.tenant}`,
       });
     } else {
-      logger.info(log._("nodes.flows.started-flows"), {
+      logger.debug(log._("nodes.flows.started-flows"), {
         rid: `tenant/${repo.tenant}`,
       });
     }
   }
-
-  // setting in global storage
-  /*
-  global.tenantStorage[repo.tenant] = {};
-  global.tenantStorage[repo.tenant].activeFlowConfig = repo.activeFlowConfig;
-  global.tenantStorage[repo.tenant].activeFlows = repo.activeFlows;
-  global.tenantStorage[repo.tenant].activeConfig = repo.activeConfig;
-  logger.debug("Added Flows in Global Storage.", {
-    rid: `tenant/${repo.tenant}`,
-  });
-  */
 }
 
 function stop(type, diff, muteLog) {
@@ -480,9 +473,13 @@ function stop(type, diff, muteLog) {
   };
   if (!muteLog) {
     if (type !== "full") {
-      logger.info(log._(`nodes.flows.stopping-modified-${type}`));
+      logger.info(log._(`nodes.flows.stopping-modified-${type}`), {
+        rid: `tenant/${repo.tenant}`,
+      });
     } else {
-      logger.info(log._("nodes.flows.stopping-flows"));
+      logger.info(log._("nodes.flows.stopping-flows"), {
+        rid: `tenant/${repo.tenant}`,
+      });
     }
   }
   repo.started = false;
@@ -532,9 +529,13 @@ function stop(type, diff, muteLog) {
     }
     if (!muteLog) {
       if (type !== "full") {
-        logger.info(log._(`nodes.flows.stopped-modified-${type}`));
+        logger.info(log._(`nodes.flows.stopped-modified-${type}`), {
+          rid: `tenant/${repo.tenant}`,
+        });
       } else {
-        logger.info(log._("nodes.flows.stopped-flows"));
+        logger.info(log._("nodes.flows.stopped-flows"), {
+          rid: `tenant/${repo.tenant}`,
+        });
       }
     }
     events.emit("flows:stopped", { config: repo.activeConfig, type, diff });
@@ -572,8 +573,6 @@ function updateMissingTypes() {
   const subflowInstanceRE = /^subflow:(.+)$/;
   repo.activeFlowConfig.missingTypes = [];
 
-  console.log("updateMissingTypesupdateMissingTypes");
-
   for (const id in repo.activeFlowConfig.allNodes) {
     if (repo.activeFlowConfig.allNodes.hasOwnProperty(id)) {
       const node = repo.activeFlowConfig.allNodes[id];
@@ -594,7 +593,10 @@ function updateMissingTypes() {
 }
 
 async function addFlow(flow, user) {
-  console.log("============addFlow=========");
+  logger.debug("Adding a new flow...", {
+    rid: `tenant/${repo.tenant}`,
+  });
+
   let i;
   let node;
   if (!flow.hasOwnProperty("nodes")) {
@@ -645,7 +647,7 @@ async function addFlow(flow, user) {
   let newConfig = clone(repo.activeConfig.flows);
   newConfig = newConfig.concat(nodes);
 
-  return setFlows(newConfig, null, "flows", true, null, user, repo.tenant).then(() => {
+  return setFlows(newConfig, null, "flows", true, null, user).then(() => {
     logger.info(
       log._("nodes.flows.added-flow", {
         label: `${flow.label ? `${flow.label} ` : ""}[${flow.id}]`,
@@ -656,7 +658,9 @@ async function addFlow(flow, user) {
 }
 
 function getFlow(id) {
-  console.log("============getFlow=========");
+  logger.debug("Getting flow...", {
+    rid: `tenant/${repo.tenant}`,
+  });
 
   let flow;
   if (id === "global") {
@@ -721,8 +725,11 @@ function getFlow(id) {
   return result;
 }
 
-async function updateFlow(id, newFlow, user) {
-  console.log("============updateFlow===========");
+async function updateFlow(id, newFlow, user, token) {
+  logger.debug(`Updating flow with ID:${id}`, {
+    rid: `tenant/${repo.tenant}`,
+  });
+
   let label = id;
   if (id !== "global") {
     if (!repo.activeFlowConfig.flows[id]) {
@@ -785,7 +792,9 @@ async function updateFlow(id, newFlow, user) {
 }
 
 async function removeFlow(id, user) {
-  console.log("============removeFlow=========");
+  logger.debug(`Removing flow with ID:${id}`, {
+    rid: `tenant/${repo.tenant}`,
+  });
 
   if (id === "global") {
     // TODO: nls + error code

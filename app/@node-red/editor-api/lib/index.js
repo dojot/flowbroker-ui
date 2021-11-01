@@ -26,47 +26,8 @@ const auth = require("./auth");
 
 const apiUtil = require("./util");
 
-class RepoEditorApi {
-  constructor() {
-    this._adminApp = null;
-    this._server = null;
-    this._editor = null;
-    this._tenant = null;
-    return this;
-  }
+const RepoEditorApi = require("../../../repository/RepoEditorApi");
 
-  get adminApp() {
-    return this._adminApp;
-  }
-
-  get server() {
-    return this._server;
-  }
-
-  get editor() {
-    return this._editor;
-  }
-
-  get tenant() {
-    return this._tenant;
-  }
-
-  set editor(val) {
-    this._editor = val;
-  }
-
-  set adminApp(val) {
-    this._adminApp = val;
-  }
-
-  set server(val) {
-    this._server = val;
-  }
-
-  set tenant(val) {
-    this._tenant = val;
-  }
-}
 const repo = new RepoEditorApi();
 
 /**
@@ -84,7 +45,6 @@ function init(settings, _server, storage, runtimeAPI) {
 
   repo.adminApp = express();
 
-  const cors = require("cors");
   var corsHandler = cors({
     origin: "*",
     methods: "GET,PUT,POST,DELETE",

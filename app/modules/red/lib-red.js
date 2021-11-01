@@ -4,62 +4,14 @@ const redUtil = require("@node-red/util");
 
 const importFresh = require("import-fresh");
 
-const MainStorage = require("../storage/MainStorage");
+const MainStorage = require("../../repository/MainStorage");
+
+const RepoLibRed = require("../../repository/RepoLibRed");
 
 const api = importFresh("../../@node-red/editor-api/lib");
 
 const logger = new Logger("flowbroker-ui:lib-red");
 
-/* Internal Repository */
-class RepoLibRed {
-  constructor() {
-    this._apiEnabled = null;
-    this._server = null;
-    this._runtime = {};
-    this._tenant = null;
-    return this;
-  }
-
-  get apiEnabled() {
-    return this._apiEnabled;
-  }
-
-  get server() {
-    return this._server;
-  }
-
-  get runtime() {
-    return this._runtime;
-  }
-
-  get tenant() {
-    return this._tenant;
-  }
-
-  get instanceId() {
-    return this._instanceId;
-  }
-
-  set instanceId(val) {
-    this._instanceId = val;
-  }
-
-  set runtime(val) {
-    this._runtime = val;
-  }
-
-  set apiEnabled(val) {
-    this._apiEnabled = val;
-  }
-
-  set server(val) {
-    this._server = val;
-  }
-
-  set tenant(val) {
-    this._tenant = val;
-  }
-}
 const repo = new RepoLibRed();
 
 /**
@@ -79,17 +31,21 @@ module.exports = {
    * @memberof node-red
    */
   init(httpServer, userSettings, _instanceId, _tenant) {
+    logger.info(`Initializing Node-RED with ID: ${_instanceId}`);
+
     if (!userSettings) {
       userSettings = httpServer;
       httpServer = null;
     }
 
-    /* to duplicate runtime data */
-    repo.runtime = importFresh("../../@node-red/runtime/lib");
     repo.instanceId = _instanceId;
     repo.tenant = _tenant;
 
-    // Saving the runtime memory address for specified tenant
+    // ImportFresh is necessary to create new memory positions
+    // for Runtime data
+    repo.runtime = importFresh("../../@node-red/runtime/lib");
+
+    // Saving the runtime memory address for this tenant
     MainStorage.setByTenant(_tenant, "runtime", repo.runtime);
 
     redUtil.init(userSettings);
@@ -107,8 +63,7 @@ module.exports = {
     repo.server = httpServer;
     logger.info("RED Application initialized.", { rid: `tenant/${repo.tenant}` });
   },
-  instanceId: repo.instanceId,
-  tenant: repo.tenant,
+
   /**
    * Start the Node-RED application.
    * @return {Promise} - resolves when complete
@@ -125,7 +80,12 @@ module.exports = {
     logger.info("Starting a new RED Application.", { rid: `tenant/${repo.tenant}` });
 
     const reun = MainStorage.getByTenant(repo.tenant, "runtime");
-    console.log("------------", repo.tenant, reun.tenant, reun._.tenant);
+    // To help any troubleshooting issues
+    logger.debug(
+      `Checking the data segregation: theses values should be the same tenant: ${repo.tenant}, ${reun.tenant}, ${reun._.tenant}.`,
+      { rid: `tenant/${repo.tenant}` },
+    );
+
     const startPromise = MainStorage.getByTenant(repo.tenant, "runtime")
       .start()
       .then(() => {
@@ -166,7 +126,17 @@ module.exports = {
       return Promise.resolve();
     });
   },
-
+  /**
+   * Exporting instanceId
+   */
+  instanceId: repo.instanceId,
+  /**
+   * The Tenant for this istance
+   * @type string
+   */
+  get tenant() {
+    return repo.tenant;
+  },
   /**
    * Logging utilities
    * @see @node-red/util_log

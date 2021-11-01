@@ -8,18 +8,16 @@ const os = require("os");
 
 const { Logger } = require("@dojot/microservice-sdk");
 
-const { log, i18n, events, exec, util, hooks } = require("@node-red/util");
+const {
+  log, i18n, events, exec, util, hooks
+} = require("@node-red/util");
 
 const importFresh = require("import-fresh");
 
 const externalAPI = importFresh("./api");
 
-// node-RED/runtime/nodes service
-// const nodes = importFresh("./nodes");
-
-const MainStorage = require("../../../modules/storage/MainStorage");
-
 const storage = importFresh("./storage");
+
 const library = require("./library");
 const plugins = require("./plugins");
 const settings = require("./settings");
@@ -133,7 +131,6 @@ function init(userSettings, httpServer, _adminApi, _instanceId, _tenant) {
     });
   }
 
-  // @TODO could remove it
   userSettings.version = getVersion();
   settings.init(userSettings);
   i18n.init(userSettings);
@@ -213,10 +210,9 @@ function start() {
         }
         if (settings.externalModules) {
           // autoInstallModules = autoInstall enabled && (no palette setting || palette install not disabled)
-          autoInstallModules =
-            settings.externalModules.autoInstall &&
-            (!settings.externalModules.palette ||
-              settings.externalModules.palette.allowInstall !== false);
+          autoInstallModules = settings.externalModules.autoInstall
+            && (!settings.externalModules.palette
+              || settings.externalModules.palette.allowInstall !== false);
         }
         let i;
         const nodeErrors = runtime.nodes.getNodeList((n) => n.err != null);
@@ -304,7 +300,7 @@ function start() {
             .loadFlows(null)
             .then(runtime.nodes.startFlows)
             .catch((err) => {
-              logger.catch(err.message, {
+              logger.error(err.message, {
                 rid: `tenant/${runtime.tenant}`,
               });
             });
@@ -345,7 +341,7 @@ function reinstallModules(moduleList) {
               reinstallList.push(mod);
             }),
         );
-      })(moduleList[i]);
+      }(moduleList[i]));
     }
   }
   Promise.all(promises).then((results) => {

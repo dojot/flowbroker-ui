@@ -14,10 +14,26 @@
  * limitations under the License.
  * */
 
-const { log } = require("@node-red/util"); // TODO: separate module
-const { i18n } = require("@node-red/util"); // TODO: separate module
+const { log } = require("@node-red/util");
+
+const { i18n } = require("@node-red/util");
 
 module.exports = {
+  getToken(headers) {
+    if (headers.authorization) {
+      return headers.authorization.substr(7); // removing 'Bearer '
+    }
+    return false;
+  },
+
+  tenantChecker(targetTenant, validTenant) {
+    if (targetTenant === validTenant) {
+      return true;
+    }
+    log.error(`Requested data from invalid tenant. Requesting ${targetTenant} from ${validTenant}`);
+    return false;
+  },
+
   errorHandler(err, req, res, next) {
     // TODO: why this when rejectHandler also?!
 

@@ -1,8 +1,8 @@
 const StorageService = {
   isAuthenticated() {
-    return localStorage.getItem("TOKEN_KEY") !== null;
+    return localStorage.getItem("jwt") !== null;
   },
   getToken() {
-    return localStorage.getItem("TOKEN_KEY");
+    return localStorage.getItem("jwt");
   },
 };

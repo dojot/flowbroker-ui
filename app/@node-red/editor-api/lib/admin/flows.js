@@ -1,19 +1,3 @@
-/**
- * Copyright JS Foundation and other contributors, http://js.foundation
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- * */
-
 const { Logger } = require("@dojot/microservice-sdk");
 
 const apiUtils = require("../util");
@@ -35,11 +19,20 @@ module.exports = {
     }
 
     const opts = {
-      tenant: req.baseUrl.split("/")[1],
+      tenant: req.baseUrl.split("/")[2],
       user: req.user,
       req: apiUtils.getRequestLogObject(req),
+      token: apiUtils.getToken(req.headers),
     };
-    logger.debug(`Flows requested in Editor-API/admin for tenant: ${opts.tenant}`, {
+
+    if (!apiUtils.tenantChecker(opts.tenant, req.tokenTenant)) {
+      const err = new Error("Requesting data from wrong tenant.");
+      err.code = 412;
+      apiUtils.rejectHandler(req, res, err);
+      return false;
+    }
+
+    logger.debug(`Valid flow requested in Editor-API/admin for tenant: ${opts.tenant}`, {
       rid: `tenant/${runtimeAPI.tenant}`,
     });
 
@@ -66,6 +59,7 @@ module.exports = {
     const opts = {
       tenant: req.baseUrl.split("/")[1],
       user: req.user,
+      token: apiUtils.getToken(req.headers),
       deploymentType: req.get("Node-RED-Deployment-Type") || "full",
       req: apiUtils.getRequestLogObject(req),
     };

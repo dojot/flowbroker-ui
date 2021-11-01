@@ -59,7 +59,6 @@ function load() {
 }
 
 function addModule(module) {
-  console.log("module", module);
   return loader.addModule(module).then(() => registry.getModuleInfo(module));
 }
 
