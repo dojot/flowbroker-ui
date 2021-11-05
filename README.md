@@ -3,7 +3,8 @@
 [![License badge](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Docker badge - flowbroker-ui](https://img.shields.io/docker/pulls/dojot/flowbroker-ui.svg)](https://hub.docker.com/r/dojot/flowbroker-ui/)
 
-The **Flowbroker-UI** is a UI for Dojot Flowbroker, a service based in NodeRed. A flow is a sequence of functional blocks (nodes) to process incoming particular events or device messages. With a flow you can dynamically analyze each new message in order to apply validations, infer information, trigger actions or notifications.
+The **Flowbroker-UI** is a Multi-Tenant UI for Dojot Flowbroker, a service based in NodeRed.
+Initially, a flow is a sequence of functional blocks (nodes) to process incoming particular events or device messages. With a flow you can dynamically analyze each new message in order to apply validations, infer information, trigger actions or notifications.
 
 ## **Table of Contents**
 
@@ -13,14 +14,14 @@ The **Flowbroker-UI** is a UI for Dojot Flowbroker, a service based in NodeRed. 
 4. [Running the service](#running-the-service)
    1. [Configurations](#configurations)
       1. [General Configurations](#general-configurations)
-   2. [How to run](#how-to-run)
+   2. [Generating Docker](#generation-docker)
 5. [Creating a new node](#creating-a-new-node)
 6. [Documentation](#documentation)
 7. [Issues and help](#issues-and-help)
 
 ## Overview
 
-This code is based on Node-Red project, following your schema. Node-RED consists of 6 node modules under the `@node-red` scope, which are pulled together by the top-level `node-red` module.
+This code is based on Node-Red project, following your base schema. The original Node-RED consists of 6 node modules under the `@node-red` scope, which are pulled together by the top-level `node-red` module.
 
 | Module                  | Description                                                                                                     |
 | ----------------------- | --------------------------------------------------------------------------------------------------------------- |
@@ -33,16 +34,18 @@ This code is based on Node-Red project, following your schema. Node-RED consists
 | @node-red/editor-client | the client-side resources of the Node-RED editor application                                                    |
 
 Check out http://nodered.org/docs/getting-started/ for full instructions about Node-RED.
-The @node-red/registry, @node-red/runtime, and @Node-red/utils are used as compiled components.
 
-Furthermore, the UI no longer offers the standard features provided by Node-RED:
+Due to the Dojot integration, the UI no longer offers the standard features provided by Node-RED:
 
-    - context
-    - config-nodes
-    - groups
-    - subflow
-    - import-library
-    - export-library
+- context
+- config-nodes
+- groups
+- subflow
+- import-library
+- export-library
+
+On the other hand, Flowbroker-UI now supports multi-tenant segregation, enabling multiple accounts to manage their flows independently.
+Also it been blocked access to sensitive information from other tenants if user does not have permission.
 
 ## Dependencies
 
@@ -63,10 +66,18 @@ We propose some improvements to the Flowbroker-UI, aimed at improving the user e
 - Creation of example for flows;
 - Create unit tests for dojotStorageModule;
 - Remove non-used scripts in Gruntfile;
-- Remove basic authentication and other schemas non-used in red.js file;
+- Remove no longer needed libraries from package.json;
 - Rechecking license-exceptions.json;
+- Also use the JWT Token (from local Storage) created by GUI-V2;
+
+#### The current drawbacks
+
+- If a new tenant is created, we should restart the service;
 
 ## Running the service
+
+Before using the UI, you need to login through Dojot's GUI-V1.
+After login, **Flowbroker UI** is available at the address "http:<dojot-adress>:<port>/nodered/<tenant-name>/".
 
 ### Configurations
 
@@ -107,7 +118,7 @@ You also should update the Front-end configuration with Dojot's account, applyin
 | ---- | ------------------- | -------------- | ------------ |
 | host | URL to access Dojot | localhost:8000 | string       |
 
-### How to run
+#### Generating Docker
 
 Beforehand, you need an already running dojot instance in your machine. Check out the
 [dojot documentation](https://dojotdocs.readthedocs.io)

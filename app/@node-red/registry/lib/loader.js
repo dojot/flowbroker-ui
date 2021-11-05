@@ -1,3 +1,4 @@
+/* === This is a file from Node-Red being used as-is. === */
 /**
  * Copyright JS Foundation and other contributors, http://js.foundation
  *
@@ -88,7 +89,7 @@ function loadModuleTypeFiles(module, type) {
                   things[n] = nodeSet;
                   return nodeSet;
                 };
-              }()),
+              })(),
             )
             .catch((err) => {
               console.log(err);
@@ -110,8 +111,8 @@ function loadModuleFiles(modules) {
     /* istanbul ignore else */
     if (modules.hasOwnProperty(module)) {
       if (
-        modules[module].redVersion
-        && !semver.satisfies(
+        modules[module].redVersion &&
+        !semver.satisfies(
           (settings.version || "0.0.0").replace(
             /(\-[1-9A-Za-z-][0-9A-Za-z-\.]*)?(\+[0-9A-Za-z-\.]+)?$/,
             "",

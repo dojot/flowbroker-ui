@@ -57,7 +57,7 @@ module.exports = {
         .json({ code: "invalid_api_version", message: "Invalid API Version requested" });
     }
     const opts = {
-      tenant: req.baseUrl.split("/")[1],
+      tenant: req.baseUrl.split("/")[2],
       user: req.user,
       token: apiUtils.getToken(req.headers),
       deploymentType: req.get("Node-RED-Deployment-Type") || "full",

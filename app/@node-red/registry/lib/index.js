@@ -1,4 +1,4 @@
-/*!
+/*! === This is a file from Node-Red being used as-is. ===
  * Copyright JS Foundation and other contributors, http://js.foundation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");

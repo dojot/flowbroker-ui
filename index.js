@@ -8,15 +8,9 @@ const path = require("path");
 
 const { v4: uuidv4 } = require("uuid");
 
-const { HTTPServer } = require("./app/server/HTTPServer");
-
 const { RedFactory } = require("./app/modules/red/RedFactory");
 
-const TenantService = require("./app/services/tenants.service");
-
 const userConfigFile = process.env.FLOWUI_USER_CONFIG_FILE || "production.conf";
-
-const MainStorage = require("./app/repository/MainStorage");
 
 ConfigManager.loadSettings("FLOWBROKER-UI", userConfigFile);
 
@@ -50,6 +44,12 @@ const stateManager = new ServiceStateManager({
     shutdownHandlerTimeout: config.server.shutdown.handlertimeoutms,
   },
 });
+
+const TenantService = require("./app/services/tenants.service");
+
+const MainStorage = require("./app/repository/MainStorage");
+
+const { HTTPServer } = require("./app/server/HTTPServer");
 
 /**
  * Instantiate the Main HTTP Server with  Websocket Server */

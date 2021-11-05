@@ -60,7 +60,7 @@ module.exports = () => ({
         [, , req.tenant] = req.path.split("/");
         req.tokenTenant = payload.service;
         if (req.tenant !== req.tokenTenant) {
-          err.message = " Missmatching tenants.";
+          err.message = "Missmatching tenants.";
           err.code = 412;
           return next(err);
         }

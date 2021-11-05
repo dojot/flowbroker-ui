@@ -1,3 +1,4 @@
+// === This is a file from Node-Red being used as-is. ===
 // This module handles the management of modules required by the runtime and flows.
 // Essentially this means keeping track of what extra modules a flow requires,
 // ensuring those modules are installed and providing a standard way for nodes

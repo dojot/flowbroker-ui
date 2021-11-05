@@ -1,3 +1,4 @@
+/* === This is a file from Node-Red being used as-is. === */
 const registry = require("@node-red/registry");
 
 module.exports = {

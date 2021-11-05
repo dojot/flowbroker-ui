@@ -1,3 +1,4 @@
+/* === This is a file from Node-Red being used as-is. === */
 /**
  * Copyright JS Foundation and other contributors, http://js.foundation
  *
@@ -12,41 +13,41 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- **/
+ * */
 
-var fs = require('fs-extra');
-var fspath = require("path");
+const fs = require("fs-extra");
+const fspath = require("path");
 
-var log = require("@node-red/util").log; // TODO: separate module
+const { log } = require("@node-red/util"); // TODO: separate module
 
-var util = require("./util");
+const util = require("./util");
 
-var sessionsFile;
-var settings;
+let sessionsFile;
+let settings;
 
 module.exports = {
-    init: function(_settings) {
-        settings = _settings;
-        sessionsFile = fspath.join(settings.userDir,".sessions.json");
-    },
-    getSessions: async function() {
-        return new Promise(function(resolve,reject) {
-            fs.readFile(sessionsFile,'utf8',function(err,data){
-                if (!err) {
-                    try {
-                        return resolve(util.parseJSON(data));
-                    } catch(err2) {
-                        log.trace("Corrupted sessions file - resetting");
-                    }
-                }
-                resolve({});
-            })
-        });
-    },
-    saveSessions: async function(sessions) {
-        if (settings.readOnly) {
-            return;
+  init(_settings) {
+    settings = _settings;
+    sessionsFile = fspath.join(settings.userDir, ".sessions.json");
+  },
+  async getSessions() {
+    return new Promise((resolve, reject) => {
+      fs.readFile(sessionsFile, "utf8", (err, data) => {
+        if (!err) {
+          try {
+            return resolve(util.parseJSON(data));
+          } catch (err2) {
+            log.trace("Corrupted sessions file - resetting");
+          }
         }
-        return util.writeFile(sessionsFile,JSON.stringify(sessions));
+        resolve({});
+      });
+    });
+  },
+  async saveSessions(sessions) {
+    if (settings.readOnly) {
+      return;
     }
-}
+    return util.writeFile(sessionsFile, JSON.stringify(sessions));
+  },
+};

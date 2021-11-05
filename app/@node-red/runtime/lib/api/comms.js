@@ -1,3 +1,4 @@
+/* === This is a file from Node-Red being used as-is. === */
 /**
  * Copyright JS Foundation and other contributors, http://js.foundation
  *
@@ -12,7 +13,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- **/
+ * */
 
 /**
  * This is the comms subsystem of the runtime.
@@ -28,134 +29,137 @@
  * @property {Function} send - publish a message to the connection
  */
 
+let runtime;
+let retained = {};
+let connections = [];
 
-var runtime;
-var retained = {};
-var connections = [];
-
-const events = require("@node-red/util").events;
+const { events } = require("@node-red/util");
 
 function handleCommsEvent(event) {
-    publish(event.topic,event.data,event.retain);
+  publish(event.topic, event.data, event.retain);
 }
 function handleStatusEvent(event) {
-    if (!event.status) {
-        delete retained["status/"+event.id]
-    } else if (!event.status.text && !event.status.fill && !event.status.shape) {
-        if (retained["status/"+event.id]) {
-            publish("status/"+event.id,{},false);
-        }
-    } else {
-        var status = {
-            text: event.status.text,
-            fill: event.status.fill,
-            shape: event.status.shape
-        };
-        publish("status/"+event.id,status,true);
+  if (!event.status) {
+    delete retained[`status/${event.id}`];
+  } else if (!event.status.text && !event.status.fill && !event.status.shape) {
+    if (retained[`status/${event.id}`]) {
+      publish(`status/${event.id}`, {}, false);
     }
+  } else {
+    const status = {
+      text: event.status.text,
+      fill: event.status.fill,
+      shape: event.status.shape,
+    };
+    publish(`status/${event.id}`, status, true);
+  }
 }
 function handleRuntimeEvent(event) {
-    runtime.log.trace("runtime event: "+JSON.stringify(event));
-    publish("notification/"+event.id,event.payload||{},event.retain);
+  runtime.log.trace(`runtime event: ${JSON.stringify(event)}`);
+  publish(`notification/${event.id}`, event.payload || {}, event.retain);
 }
 function handleEventLog(event) {
-    var type = event.payload.type;
-    var id = event.id;
-    if (event.payload.data) {
-        var data = event.payload.data;
-        if (data.endsWith('\n')) {
-            data = data.substring(0,data.length-1);
-        }
-        var lines = data.split(/\n/);
-        lines.forEach(line => {
-            runtime.log.debug((type?("["+type+"] "):"")+line)
-        })
+  const { type } = event.payload;
+  const { id } = event;
+  if (event.payload.data) {
+    let { data } = event.payload;
+    if (data.endsWith("\n")) {
+      data = data.substring(0, data.length - 1);
     }
-    publish("event-log/"+event.id,event.payload||{});
+    const lines = data.split(/\n/);
+    lines.forEach((line) => {
+      runtime.log.debug((type ? `[${type}] ` : "") + line);
+    });
+  }
+  publish(`event-log/${event.id}`, event.payload || {});
 }
 
-function publish(topic,data,retain) {
-    if (retain) {
-        retained[topic] = data;
-    } else {
-        delete retained[topic];
-    }
-    connections.forEach(connection => connection.send(topic,data))
+function publish(topic, data, retain) {
+  if (retain) {
+    retained[topic] = data;
+  } else {
+    delete retained[topic];
+  }
+  connections.forEach((connection) => connection.send(topic, data));
 }
 
+const api = (module.exports = {
+  init(_runtime) {
+    runtime = _runtime;
+    connections = [];
+    retained = {};
+    events.removeListener("node-status", handleStatusEvent);
+    events.on("node-status", handleStatusEvent);
+    events.removeListener("runtime-event", handleRuntimeEvent);
+    events.on("runtime-event", handleRuntimeEvent);
+    events.removeListener("comms", handleCommsEvent);
+    events.on("comms", handleCommsEvent);
+    events.removeListener("event-log", handleEventLog);
+    events.on("event-log", handleEventLog);
+  },
 
-var api = module.exports = {
-    init: function(_runtime) {
-        runtime = _runtime;
-        connections = [];
-        retained = {};
-        events.removeListener("node-status",handleStatusEvent);
-        events.on("node-status",handleStatusEvent);
-        events.removeListener("runtime-event",handleRuntimeEvent);
-        events.on("runtime-event",handleRuntimeEvent);
-        events.removeListener("comms",handleCommsEvent);
-        events.on("comms",handleCommsEvent);
-        events.removeListener("event-log",handleEventLog);
-        events.on("event-log",handleEventLog);
-    },
+  /**
+   * Registers a new comms connection
+   * @param {Object} opts
+   * @param {User} opts.user - the user calling the api
+   * @param {CommsConnection} opts.client - the client connection
+   * @return {Promise<Object>} - resolves when complete
+   * @memberof @node-red/runtime_comms
+   */
+  async addConnection(opts) {
+    connections.push(opts.client);
+  },
 
-    /**
-    * Registers a new comms connection
-    * @param {Object} opts
-    * @param {User} opts.user - the user calling the api
-    * @param {CommsConnection} opts.client - the client connection
-    * @return {Promise<Object>} - resolves when complete
-    * @memberof @node-red/runtime_comms
-    */
-    addConnection: async function(opts) {
-        connections.push(opts.client);
-    },
+  /**
+   * Unregisters a comms connection
+   * @param {Object} opts
+   * @param {User} opts.user - the user calling the api
+   * @param {CommsConnection} opts.client - the client connection
+   * @return {Promise<Object>} - resolves when complete
+   * @memberof @node-red/runtime_comms
+   */
+  async removeConnection(opts) {
+    for (let i = 0; i < connections.length; i++) {
+      if (connections[i] === opts.client) {
+        connections.splice(i, 1);
+        break;
+      }
+    }
+  },
 
-    /**
-    * Unregisters a comms connection
-    * @param {Object} opts
-    * @param {User} opts.user - the user calling the api
-    * @param {CommsConnection} opts.client - the client connection
-    * @return {Promise<Object>} - resolves when complete
-    * @memberof @node-red/runtime_comms
-    */
-    removeConnection: async function(opts) {
-        for (var i=0;i<connections.length;i++) {
-            if (connections[i] === opts.client) {
-                connections.splice(i,1);
-                break;
-            }
-        }
-    },
+  /**
+   * Subscribes a comms connection to a given topic. Currently, all clients get
+   * automatically subscribed to everything and cannot unsubscribe. Sending a subscribe
+   * request will trigger retained messages to be sent.
+   * @param {Object} opts
+   * @param {User} opts.user - the user calling the api
+   * @param {CommsConnection} opts.client - the client connection
+   * @param {String} opts.topic - the topic to subscribe to
+   * @return {Promise<Object>} - resolves when complete
+   * @memberof @node-red/runtime_comms
+   */
+  async subscribe(opts) {
+    const re = new RegExp(
+      `^${opts.topic
+        .replace(/([\[\]\?\(\)\\\\$\^\*\.|])/g, "\\$1")
+        .replace(/\+/g, "[^/]+")
+        .replace(/\/#$/, "(/.*)?")}$`,
+    );
+    for (const t in retained) {
+      if (re.test(t)) {
+        opts.client.send(t, retained[t]);
+      }
+    }
+  },
 
-    /**
-    * Subscribes a comms connection to a given topic. Currently, all clients get
-    * automatically subscribed to everything and cannot unsubscribe. Sending a subscribe
-    * request will trigger retained messages to be sent.
-    * @param {Object} opts
-    * @param {User} opts.user - the user calling the api
-    * @param {CommsConnection} opts.client - the client connection
-    * @param {String} opts.topic - the topic to subscribe to
-    * @return {Promise<Object>} - resolves when complete
-    * @memberof @node-red/runtime_comms
-    */
-    subscribe: async function(opts) {
-        var re = new RegExp("^"+opts.topic.replace(/([\[\]\?\(\)\\\\$\^\*\.|])/g,"\\$1").replace(/\+/g,"[^/]+").replace(/\/#$/,"(\/.*)?")+"$");
-        for (var t in retained) {
-            if (re.test(t)) {
-                opts.client.send(t,retained[t]);
-            }
-        }
-    },
-
-    /**
-    * TODO: Unsubscribes a comms connection from a given topic
-    * @param {Object} opts
-    * @param {User} opts.user - the user calling the api
-    * @param {CommsConnection} opts.client - the client connection
-    * @param {String} opts.topic - the topic to unsubscribe from
-    * @return {Promise<Object>} - resolves when complete
-    * @memberof @node-red/runtime_comms
-    */
-    unsubscribe: async function(opts) {}
-};
+  /**
+   * TODO: Unsubscribes a comms connection from a given topic
+   * @param {Object} opts
+   * @param {User} opts.user - the user calling the api
+   * @param {CommsConnection} opts.client - the client connection
+   * @param {String} opts.topic - the topic to unsubscribe from
+   * @return {Promise<Object>} - resolves when complete
+   * @memberof @node-red/runtime_comms
+   */
+  async unsubscribe(opts) {},
+});

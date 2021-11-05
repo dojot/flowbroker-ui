@@ -1,63 +1,69 @@
+/* === This is a file from Node-Red being used as-is. === */
 function getSubflowType(subflow) {
-    if (subflow.meta && subflow.meta.type) {
-        return subflow.meta.type
-    }
-    return "sf:"+subflow.id
+  if (subflow.meta && subflow.meta.type) {
+    return subflow.meta.type;
+  }
+  return `sf:${subflow.id}`;
 }
 
 function generateSubflowConfig(subflow) {
+  const subflowType = getSubflowType(subflow);
+  const label = subflow.name || subflowType;
+  const category = subflow.category || "function";
+  const color = subflow.color || "#C0DEED";
+  const inputCount = subflow.in ? subflow.in.length : 0;
+  const outputCount = subflow.out ? subflow.out.length : 0;
+  const icon = subflow.icon || "arrow-in.svg";
 
-    const subflowType = getSubflowType(subflow)
-    const label = subflow.name || subflowType;
-    const category = subflow.category || "function";
-    const color = subflow.color || "#C0DEED";
-    const inputCount = subflow.in?subflow.in.length:0;
-    const outputCount = subflow.out?subflow.out.length:0;
-    const icon = subflow.icon || "arrow-in.svg";
+  const defaults = {
+    name: { value: "" },
+  };
 
-    const defaults = {
-        name: {value: ""}
-    }
+  const credentials = {};
 
-    const credentials = {}
+  if (subflow.env) {
+    subflow.env.forEach((prop) => {
+      let defaultValue;
 
-    if (subflow.env) {
-        subflow.env.forEach(prop => {
-            var defaultValue;
+      switch (prop.type) {
+        case "cred":
+          defaultValue = "";
+          break;
+        case "str":
+          defaultValue = prop.value || "";
+          break;
+        case "bool":
+          defaultValue = typeof prop.value === "boolean" ? prop.value : prop.value === "true";
+          break;
+        case "num":
+          defaultValue = typeof prop.value === "number" ? prop.value : Number(prop.value);
+          break;
+        default:
+          defaultValue = {
+            type: prop.type,
+            value: prop.value || "",
+          };
+      }
 
-            switch(prop.type) {
-                case "cred": defaultValue = ""; break;
-                case "str": defaultValue = prop.value||""; break;
-                case "bool": defaultValue = (typeof prop.value === 'boolean')?prop.value:prop.value === "true" ; break;
-                case "num": defaultValue = (typeof prop.value === 'number')?prop.value:Number(prop.value); break;
-                default:
-                    defaultValue = {
-                        type: prop.type,
-                        value: prop.value||""
-                    }
-            }
+      defaults[prop.name] = {
+        value: defaultValue,
+        ui: prop.ui,
+      };
+      if (prop.type === "cred") {
+        defaults[prop.name].ui.type = "cred";
+        credentials[prop.name] = { type: "password" };
+      }
+    });
+  }
+  const defaultString = JSON.stringify(defaults);
+  const credentialsString = JSON.stringify(credentials);
 
+  let nodeHelp = "";
+  if (subflow.info) {
+    nodeHelp = `<script type="text/markdown" data-help-name="${subflowType}">${subflow.info}</script>`;
+  }
 
-
-            defaults[prop.name] = {
-                value: defaultValue,
-                ui: prop.ui
-            }
-            if (prop.type === 'cred') {
-                defaults[prop.name].ui.type = "cred";
-                credentials[prop.name] = {type:"password"}
-            }
-        })
-    }
-    const defaultString = JSON.stringify(defaults);
-    const credentialsString = JSON.stringify(credentials);
-
-    let nodeHelp = "";
-    if (subflow.info) {
-        nodeHelp = `<script type="text/markdown" data-help-name="${subflowType}">${subflow.info}</script>`
-    }
-
-    return `<script type="text/javascript">
+  return `<script type="text/javascript">
     RED.nodes.registerType("${subflowType}",{
         subflowModule: true,
         category: "${category}",
@@ -110,18 +116,17 @@ function generateSubflowConfig(subflow) {
     <div id="subflow-input-ui"></div>
 </script>
 ${nodeHelp}
-`
+`;
 }
 
-
-function register(id,subflow) {
-    return {
-        subflow: subflow,
-        type: getSubflowType(subflow),
-        config: generateSubflowConfig(subflow)
-    }
+function register(id, subflow) {
+  return {
+    subflow,
+    type: getSubflowType(subflow),
+    config: generateSubflowConfig(subflow),
+  };
 }
 
 module.exports = {
-    register: register
-}
+  register,
+};

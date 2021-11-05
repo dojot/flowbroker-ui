@@ -2,13 +2,13 @@ const clone = require("clone");
 
 const { log } = require("@node-red/util");
 
-const typeRegistry = require("@node-red/registry");
+const { Logger } = require("@dojot/microservice-sdk");
 
 const { events } = require("@node-red/util");
 
 const redUtil = require("@node-red/util").util;
 
-const { Logger } = require("@dojot/microservice-sdk");
+const typeRegistry = require("../../../registry");
 
 const Flow = require("./Flow");
 
@@ -206,11 +206,6 @@ function setFlows(_config, _credentials, type, muteLog, forceStart, user) {
     };
     repo.activeFlowConfig = newFlowConfig;
 
-    /*
-    console.log("activeConfig", activeConfig);
-    console.log("activeFlowConfig", activeFlowConfig);
-*/
-
     if (forceStart || repo.started) {
       // Flows are running (or should be)
 
@@ -218,8 +213,7 @@ function setFlows(_config, _credentials, type, muteLog, forceStart, user) {
       return stop(type, diff, muteLog)
         .then(() =>
           // Once stopped, allow context to remove anything no longer needed
-          context.clean(repo.activeFlowConfig),
-        )
+          context.clean(repo.activeFlowConfig),)
         .then(() => {
           // Start the active flows
           start(type, diff, muteLog, repo.tenant).then(() => {
@@ -504,8 +498,7 @@ function stop(type, diff, muteLog) {
 
   activeFlowIds.forEach((id) => {
     if (repo.activeFlows.hasOwnProperty(id)) {
-      const flowStateChanged =
-        diff && (diff.added.indexOf(id) !== -1 || diff.removed.indexOf(id) !== -1);
+      const flowStateChanged = diff && (diff.added.indexOf(id) !== -1 || diff.removed.indexOf(id) !== -1);
       logger.debug(`red/nodes/flows.stop : stopping flow : ${id}`);
       promises.push(repo.activeFlows[id].stop(flowStateChanged ? null : stopList, removedList));
       if (type === "full" || flowStateChanged || diff.removed.indexOf(id) !== -1) {
@@ -580,8 +573,8 @@ function updateMissingTypes() {
         console.log("node.type", node.type);
         const subflowDetails = subflowInstanceRE.exec(node.type);
         if (
-          (subflowDetails && !repo.activeFlowConfig.subflows[subflowDetails[1]]) ||
-          (!subflowDetails && !typeRegistry.get(node.type))
+          (subflowDetails && !repo.activeFlowConfig.subflows[subflowDetails[1]])
+          || (!subflowDetails && !typeRegistry.get(node.type))
         ) {
           if (repo.activeFlowConfig.missingTypes.indexOf(node.type) === -1) {
             repo.activeFlowConfig.missingTypes.push(node.type);
@@ -748,8 +741,8 @@ async function updateFlow(id, newFlow, user, token) {
     // that into account
     newConfig = newConfig.filter(
       (node) =>
-        node.type === "tab" ||
-        (node.hasOwnProperty("z") && repo.activeFlowConfig.flows.hasOwnProperty(node.z)),
+        node.type === "tab"
+        || (node.hasOwnProperty("z") && repo.activeFlowConfig.flows.hasOwnProperty(node.z)),
     );
 
     // Add in the new config nodes
@@ -882,8 +875,8 @@ module.exports = {
   isDeliveryModeAsync() {
     // If settings is null, this is likely being run by unit tests
     return (
-      !MainStorage.getByTenant(repo.tenant, "settings") ||
-      !MainStorage.getByTenant(repo.tenant, "settings").runtimeSyncDelivery
+      !MainStorage.getByTenant(repo.tenant, "settings")
+      || !MainStorage.getByTenant(repo.tenant, "settings").runtimeSyncDelivery
     );
   },
 };
