@@ -1,3 +1,4 @@
+/* === This is a file from Node-Red being used as-is. === */
 /**
  * Copyright JS Foundation and other contributors, http://js.foundation
  *
@@ -12,13 +13,15 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- **/
+ * */
 
-var net = require("net");
-var socket = net.connect(process.argv[2], function() {
-    socket.on('data', function(data) { console.log(data);});
-    socket.on('end', function() {
-    });
-    socket.write((process.argv[3]||"")+"\n", 'utf8');
+const net = require("net");
+
+var socket = net.connect(process.argv[2], () => {
+  socket.on("data", (data) => {
+    console.log(data);
+  });
+  socket.on("end", () => {});
+  socket.write(`${process.argv[3] || ""}\n`, "utf8");
 });
-socket.setEncoding('utf8');
+socket.setEncoding("utf8");

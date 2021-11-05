@@ -2,14 +2,13 @@ const { createHttpTerminator } = require("http-terminator");
 
 const { Logger, WebUtils } = require("@dojot/microservice-sdk");
 
-const express = require("express");
-
 const logger = new Logger("flowbroker-ui:http-server");
 
 const dojotTenantJwtParseInterceptor = require("./interceptors/DojotTenantJwtParse");
+
 /**
- * Wrapper to instantiate and configure a http server
- */
+ * Wrapper to instantiate and configure a HTTP server
+ * @class */
 class HTTPServer {
   /**
    * @constructor
@@ -26,8 +25,7 @@ class HTTPServer {
 
     const { requestLogInterceptor } = WebUtils.framework.interceptors;
 
-    // Creating routes
-
+    // Creating Express framework
     this.framework = WebUtils.framework.createExpress({
       interceptors: [
         requestLogInterceptor({
@@ -46,13 +44,12 @@ class HTTPServer {
       catchInvalidRequest: false,
     });
 
-    logger.debug("Express Framework registered as listener for requests to the web server.");
-
     // Binding the service state manager
     this.serviceStateManager = serviceStateManager;
     this.serviceStateManager.registerService(alias);
 
     this.server.on("request", this.framework);
+    logger.debug("Express Framework registered as listener for requests to the web server.");
 
     // Emitted when the server has been bound after calling server.listen().
     this.server.on("listening", () => {
@@ -110,7 +107,7 @@ class HTTPServer {
   }
 
   /**
-   * The Express instance used
+   * The Express instance
    * @type Express server
    */
   get express() {

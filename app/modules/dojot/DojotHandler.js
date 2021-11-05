@@ -109,7 +109,7 @@ class DojotHandler {
     const dojotFlows = castFlowsToDojot(this.auxiliarStorage, flows);
     const promisesFlows = [];
 
-    // 2, Create configuration used in axios with the Requester Token
+    // 2. Create configuration to be used with the Requester Token
     const headers = {
       accept: "application/json",
       headers: { Authorization: `Bearer ${user.token}` },

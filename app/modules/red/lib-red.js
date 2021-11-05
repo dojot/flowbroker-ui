@@ -27,7 +27,8 @@ module.exports = {
    * Initialize the Node-RED application.
    * @param {server} httpServer - the HTTP server object to use
    * @param {Object} userSettings - an object containing the runtime settings
-   * @param {Object} runtimeInstance
+   * @param {string} _instanceId - Node-RED Application UUID
+   * @param {string} _tenant - The tenant related to this Node-RED Application
    * @memberof node-red
    */
   init(httpServer, userSettings, _instanceId, _tenant) {
@@ -41,13 +42,13 @@ module.exports = {
     repo.instanceId = _instanceId;
     repo.tenant = _tenant;
 
-    // ImportFresh is necessary to create new memory positions
-    // for Runtime data
+    // ImportFresh is necessary to create new memory addresses for Runtime object
     repo.runtime = importFresh("../../@node-red/runtime/lib");
 
     // Saving the runtime memory address for this tenant
     MainStorage.setByTenant(_tenant, "runtime", repo.runtime);
 
+    // Initialize the utils
     redUtil.init(userSettings);
 
     // Initialize the runtime setting the environment variables
@@ -127,11 +128,12 @@ module.exports = {
     });
   },
   /**
-   * Exporting instanceId
+   * The unique ID for this instance
+   * @type string
    */
   instanceId: repo.instanceId,
   /**
-   * The Tenant for this istance
+   * The Tenant for this instance
    * @type string
    */
   get tenant() {

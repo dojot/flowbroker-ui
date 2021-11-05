@@ -11,13 +11,12 @@ class RedFactory {
   }
 
   /**
-   * Create a new Node-RED Application
-   * @param {string} tenantName an Dojot's Tenant
+   * Create a new Node-RED Application with new memory addresses
+   * @param {string} tenantName a Dojot's Tenant
    */
   create(tenantName) {
     let redInstance = null;
     try {
-      // Creating a new instance
       redInstance = importFresh("./lib-red");
       this.stateManager.registerService(`RED-instance-${tenantName}`);
     } catch (err) {

@@ -1,3 +1,4 @@
+/* === This is a file from Node-Red being used as-is. === */
 /**
  * Copyright JS Foundation and other contributors, http://js.foundation
  *
@@ -25,7 +26,7 @@ module.exports = {
   getAll(req, res) {
     const opts = {
       user: req.user,
-      tenant: req.baseUrl.split("/")[1],
+      tenant: req.baseUrl.split("/")[2],
       req: apiUtils.getRequestLogObject(req),
     };
     if (req.get("accept") === "application/json") {
@@ -46,7 +47,7 @@ module.exports = {
   post(req, res) {
     const opts = {
       user: req.user,
-      tenant: req.baseUrl.split("/")[1],
+      tenant: req.baseUrl.split("/")[2],
       module: req.body.module,
       version: req.body.version,
       url: req.body.url,

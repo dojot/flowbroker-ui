@@ -1,5 +1,3 @@
-const path = require("path");
-const fs = require("fs");
 const clone = require("clone");
 const util = require("util");
 
@@ -19,8 +17,6 @@ const Node = require("./Node");
 const logger = new Logger("flowbroker-ui:runtime/lib/nodes");
 
 let settings;
-
-// console.log("registry", registry);
 
 /**
  * Registers a node constructor

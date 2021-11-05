@@ -1,3 +1,4 @@
+/* === This is a file from Node-Red being used as-is. === */
 /**
  * Copyright JS Foundation and other contributors, http://js.foundation
  *
@@ -21,7 +22,6 @@ const redUtil = require("@node-red/util").util;
 const Log = require("@node-red/util").log;
 const { hooks } = require("@node-red/util");
 const context = require("./context");
-const flows = require("../flows");
 
 const NOOP_SEND = function () {};
 

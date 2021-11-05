@@ -1,3 +1,4 @@
+/* === This is a file from Node-Red being used as-is. === */
 /**
  * Copyright JS Foundation and other contributors, http://js.foundation
  *
@@ -53,7 +54,7 @@ module.exports = {
   },
   runtimeSettings(req, res) {
     const opts = {
-      tenant: req.baseUrl.split("/")[1],
+      tenant: req.baseUrl.split("/")[2],
       user: req.user,
     };
     runtimeAPI.settings.getRuntimeSettings(opts).then((result) => {

@@ -1,3 +1,4 @@
+/* === This is a file from Node-Red being used as-is. === */
 /**
  * Copyright JS Foundation and other contributors, http://js.foundation
  *
@@ -17,32 +18,33 @@
 var i18n = require("@node-red/util").i18n;
 
 module.exports = {
-    "package.json": function(project) {
-        var package = {
-            "name": project.name,
-            "description": project.summary||i18n._("storage.localfilesystem.projects.summary"),
-            "version": "0.0.1",
-            "dependencies": {},
-            "node-red": {
-                "settings": {
-                }
-            }
-        };
-        if (project.files) {
-            if (project.files.flow) {
-                package['node-red'].settings.flowFile = project.files.flow;
-                package['node-red'].settings.credentialsFile = project.files.credentials;
-            }
-        }
-        return JSON.stringify(package,"",4);
-    },
-    "README.md": function(project) {
-        var content = project.name+"\n"+("=".repeat(project.name.length))+"\n\n";
-        if (project.summary) {
-            content += project.summary+"\n\n";
-        }
-        content += i18n._("storage.localfilesystem.projects.readme");
-        return content;
-    },
-    ".gitignore": function() { return "*.backup" ;}
-}
+  "package.json": function (project) {
+    var package = {
+      name: project.name,
+      description: project.summary || i18n._("storage.localfilesystem.projects.summary"),
+      version: "0.0.1",
+      dependencies: {},
+      "node-red": {
+        settings: {},
+      },
+    };
+    if (project.files) {
+      if (project.files.flow) {
+        package["node-red"].settings.flowFile = project.files.flow;
+        package["node-red"].settings.credentialsFile = project.files.credentials;
+      }
+    }
+    return JSON.stringify(package, "", 4);
+  },
+  "README.md": function (project) {
+    var content = project.name + "\n" + "=".repeat(project.name.length) + "\n\n";
+    if (project.summary) {
+      content += project.summary + "\n\n";
+    }
+    content += i18n._("storage.localfilesystem.projects.readme");
+    return content;
+  },
+  ".gitignore": function () {
+    return "*.backup";
+  },
+};

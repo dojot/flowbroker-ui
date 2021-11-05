@@ -19,7 +19,7 @@ const logger = new Logger("flowbroker-ui:runtime/api");
 
 const mutex = new Mutex();
 
-const { log } = require("@node-red/util"); // TODO: separate module
+const { log } = require("@node-red/util");
 
 let runtime;
 

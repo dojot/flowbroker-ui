@@ -14,7 +14,7 @@ Initially, a flow is a sequence of functional blocks (nodes) to process incoming
 4. [Running the service](#running-the-service)
    1. [Configurations](#configurations)
       1. [General Configurations](#general-configurations)
-   2. [Generating Docker](#generation-docker)
+   2. [Generating Docker](#generating-docker)
 5. [Creating a new node](#creating-a-new-node)
 6. [Documentation](#documentation)
 7. [Issues and help](#issues-and-help)
@@ -69,8 +69,9 @@ We propose some improvements to the Flowbroker-UI, aimed at improving the user e
 - Remove no longer needed libraries from package.json;
 - Rechecking license-exceptions.json;
 - Also use the JWT Token (from local Storage) created by GUI-V2;
+- We could only use one editor-API for all tenants;
 
-#### The current drawbacks
+### Present Drawbacks
 
 - If a new tenant is created, we should restart the service;
 

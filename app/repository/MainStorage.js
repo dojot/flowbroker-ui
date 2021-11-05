@@ -8,10 +8,18 @@ const DojotHandler = require("../modules/dojot/DojotHandler");
 
 const config = unflatten(ConfigManager.getConfig("FLOWBROKER-UI"));
 
-let _tenants = {};
-const _flowsData = {};
+const _tenants = {};
+
 const _wsConns = {};
 
+/**
+ * The Main Storage used to dynamically handle the multiple instances of node-RED
+ * application (one for each tenant), with uniques runtime, express server,
+ * settings, and dojot handlers.
+
+  @singleton
+  A class with only a single instance with global access points.
+ */
 class MainStorage {
   /**
    * The methods belows are used when WebSocket emmited the connection
@@ -43,7 +51,7 @@ class MainStorage {
   }
 
   /**
-   * Storing the RED instance by tenant
+   * Storing the node-Red Instance for a given tenant
    *
    *  @param {String} tenantName alias for the referral tenant
    *  @param {node-Red} instance instance of a Node-RED application
@@ -55,7 +63,7 @@ class MainStorage {
   /**
    * Get a list of Tenants
    *
-   * @returns {Array<String>} List of all Tenants instantiated.
+   * @returns {Array<String>} List of all Tenants already instantiated.
    */
   static getTenants() {
     return Object.keys(_tenants);
@@ -77,7 +85,7 @@ class MainStorage {
   }
 
   /**
-   * Generic methods to get a property from the given tenant.
+   * Generic method to get a property from the given tenant.
    *
    * @returns {Object} Reffered object for this tenant
    */
@@ -92,14 +100,6 @@ class MainStorage {
   static setByTenant(tenantName, prop, value) {
     logger.debug(`Setting for ${tenantName} prop ${prop} value ${value}`);
     _tenants[tenantName][prop] = value;
-  }
-
-  static getStorage() {
-    logger.debug("MainStorage's instance was requested.");
-    if (!_tenants) {
-      _tenants = {};
-    }
-    return _tenants;
   }
 }
 
