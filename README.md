@@ -70,6 +70,7 @@ We propose some improvements to the Flowbroker-UI, aimed at improving the user e
 - Rechecking license-exceptions.json;
 - Also use the JWT Token (from local Storage) created by GUI-V2;
 - We could only use one editor-API for all tenants;
+- Add a Dependency Injection with Awilix or other libraries;
 
 ### Present Drawbacks
 

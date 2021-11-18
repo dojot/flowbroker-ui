@@ -2,6 +2,7 @@ const { Logger } = require("@dojot/microservice-sdk");
 
 const axios = require("axios");
 
+const { WebUtils } = require("@dojot/microservice-sdk");
 const { castFlowsToDojot, castDojotToFlows } = require("./utils");
 
 const { removeFlow, saveFlow, updateFlow } = require("../../services/flows.service");
@@ -15,10 +16,9 @@ class DojotHandler {
   /**
    * Creates a MQTTClient
    *
-   * @param {String} configs.flow.user User to login in Dojot
-   * @param {String} configs.flow.password Password to login in Dojot
    * @param {String} configs.flow.url Flow service URL
    * @param {String} configs.auth.url Auth service URL
+   * @param {String} tenantName Dojot's Tenant
    *
    * @constructor
    */
@@ -26,10 +26,8 @@ class DojotHandler {
     this.tenant = tenantName;
     this.logger = new Logger("flowbroker-ui:DojotHandler");
     this.configs = configs;
-    this.user = `${configs.flow.userRadix}_${tenantName}`;
-    this.password = configs.flow.password;
-    // this. auxiliarStorage is used as a helper for the
-    // tenant-specific storage, storing the previus state of the flows
+    // AuxiliarStorage is used as a helper for the tenant-specific
+    //  storage, storing the previus state of the flows
     // received from Dojot
     this.auxiliarStorage = {};
   }
@@ -42,21 +40,25 @@ class DojotHandler {
    */
   async init() {
     try {
-      this.logger.info("Requesting Default User Token to Dojot.", {
+      this.logger.info("Creating Default User Token to access Dojot.", {
         rid: `tenant/${this.tenant}`,
       });
-      const res = await axios.post(
-        this.configs.auth.url,
-        { username: this.user, passwd: this.password },
-        { accept: "application/json" },
-      );
-      this.logger.debug(`Token was received. Using ${res.data.jwt}`, {
+
+      const token = await WebUtils.createTokenGen().generate({
+        tenant: this.tenant,
+        payload: {
+          username: "generic_user",
+          service: this.tenant,
+        },
+      });
+
+      this.logger.debug(`Token was created. Using ${token}`, {
         rid: `tenant/${this.tenant}`,
       });
 
       this.defaultHeader = {
         accept: "application/json",
-        headers: { Authorization: `Bearer ${res.data.jwt}` },
+        headers: { Authorization: `Bearer ${token}` },
       };
     } catch (err) {
       this.logger.error(`init - Requesting error: ${err.toString()}`);
@@ -71,6 +73,7 @@ class DojotHandler {
     this.logger.info("Requesting Flows from Dojot.", {
       rid: `tenant/${this.tenant}`,
     });
+
     return new Promise((resolve, reject) => {
       axios
         .get(this.configs.flow.url, this.defaultHeader)
