@@ -63,14 +63,15 @@ The Flowbroker-UI depends of the following Dojot services:
 We propose some improvements to the Flowbroker-UI, aimed at improving the user experience and adding new features. Below are presented some issues to consider:
 
 - Create translation for Portuguese;
-- Creation of example for flows;
-- Create unit tests for dojotStorageModule;
+- Create some level of Unit Tests;
 - Remove non-used scripts in Gruntfile;
+  - Update to webpack instead of grunt schema;
 - Remove no longer needed libraries from package.json;
 - Rechecking license-exceptions.json;
-- Also use the JWT Token (from local Storage) created by GUI-V2;
-- We could only use one editor-API for all tenants;
-- Add a Dependency Injection with Awilix or other libraries;
+- Also uses the JWT Token (from local Storage) created by GUI-V2/NX;
+- Add a Dependency Injection with Awilix or other librares;
+- Uses only one Editor-API and Admin-API for all tenants
+  - (currently, we are using one for each tenant but in the same address)
 
 ### Present Drawbacks
 
