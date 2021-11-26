@@ -524,6 +524,7 @@ RED.deploy = (function () {
         headers: {
           Authorization: `Bearer ${StorageService.getToken()}`,
           "Node-RED-Deployment-Type": deploymentType,
+          "Content-Type": "application/json",
         },
       })
         .done((data, textStatus, xhr) => {

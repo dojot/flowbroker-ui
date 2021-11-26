@@ -17,20 +17,23 @@ module.exports = {
         .status(400)
         .json({ code: "invalid_api_version", message: "Invalid API Version requested" });
     }
-
     const opts = {
-      tenant: req.baseUrl.split("/")[2],
+      tenant: req.tenant,
       user: req.user,
       req: apiUtils.getRequestLogObject(req),
       token: apiUtils.getToken(req.headers),
     };
 
+    // We will not do a double-check for now since we are using the
+    // same URL to address all tenants.
+    /*
     if (!apiUtils.tenantChecker(opts.tenant, req.tokenTenant)) {
       const err = new Error("Requesting data from wrong tenant.");
       err.code = 412;
       apiUtils.rejectHandler(req, res, err);
       return false;
     }
+    */
 
     logger.debug(`Valid flow requested in Editor-API/admin for tenant: ${opts.tenant}`, {
       rid: `tenant/${runtimeAPI.tenant}`,
@@ -56,8 +59,9 @@ module.exports = {
         .status(400)
         .json({ code: "invalid_api_version", message: "Invalid API Version requested" });
     }
+
     const opts = {
-      tenant: req.baseUrl.split("/")[2],
+      tenant: req.tenant,
       user: req.user,
       token: apiUtils.getToken(req.headers),
       deploymentType: req.get("Node-RED-Deployment-Type") || "full",

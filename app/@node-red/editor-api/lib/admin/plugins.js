@@ -12,7 +12,7 @@ module.exports = {
       user: req.user,
       req: apiUtils.getRequestLogObject(req),
     };
-    if (req.get("accept") == "application/json") {
+    if (req.get("accept") === "application/json") {
       runtimeAPI.plugins.getPluginList(opts).then((list) => {
         res.json(list);
       });

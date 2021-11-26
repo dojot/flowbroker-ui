@@ -73,7 +73,6 @@ class DojotHandler {
     this.logger.info("Requesting Flows from Dojot.", {
       rid: `tenant/${this.tenant}`,
     });
-
     return new Promise((resolve, reject) => {
       axios
         .get(this.configs.flow.url, this.defaultHeader)

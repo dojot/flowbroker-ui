@@ -23,7 +23,6 @@ const { i18n } = require("@node-red/util");
 const { log } = require("@node-red/util");
 
 const comms = importFresh("./comms");
-const library = require("./library");
 const info = require("./settings");
 
 const auth = require("../auth");
@@ -129,6 +128,8 @@ module.exports = {
       // Settings
       //  Main /settings route is an admin route - see lib/admin/settings.js
       // User Settings
+      editorApp.get(/^\/locales\/(.+)\/?$/, locales.get, apiUtil.errorHandler);
+
       editorApp.get(
         "/settings/user",
         needsPermission("settings.read"),
@@ -142,6 +143,7 @@ module.exports = {
         info.updateUserSettings,
         apiUtil.errorHandler,
       );
+
       // SSH keys
       editorApp.use("/settings/user/keys", needsPermission("settings.write"), info.sshkeys());
 

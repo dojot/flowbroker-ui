@@ -86,6 +86,9 @@ const redFactory = new RedFactory(stateManager, logger);
     // Notifying Storage to create a new object for this tenant
     MainStorage.newTenant(tenant);
 
+    // Initialize the DojotHandler for this tenant
+    MainStorage.getByTenant(tenant, "dojotHandler").init();
+
     // Creating a new Node-RED application
     const redInstance = redFactory.create(tenant);
     MainStorage.setInstance(tenant, redInstance);
@@ -94,7 +97,7 @@ const redFactory = new RedFactory(stateManager, logger);
     redInstance.init(tenantServer, settings, uuidv4(), tenant);
 
     // Setting routes to Express
-    server.use(`${settings.httpAdminRoot}/${tenant}`, tenantServer);
+    server.use(`${settings.httpAdminRoot}`, tenantServer);
     tenantServer.use("/", redInstance.httpAdmin);
 
     // Starting Node-RED

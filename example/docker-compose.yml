@@ -283,7 +283,7 @@ services:
       FLOWBROKER_NETWORK: ${FLOWBROKER_NETWORK}
       DOJOT_MANAGEMENT_USER: 'flowbroker'
       KAFKA_GROUP_ID: 'flowbroker-group'
-      LOG_LEVEL: 'info'
+      LOG_LEVEL: 'debug'
     depends_on:
       - rabbitmq
       - kafka
@@ -320,6 +320,7 @@ services:
     environment:
       ZOOKEEPER_HOST: zookeeper
       ZOOKEEPER_PORT: 2181
+      ZOOKEEPER_LOG_LEVEL: 'debug'
       ZEROMQ_PORT: 5556
       HOLD_LOCK_TIMEOUT: 10000
       WAIT_LOCK_TIMEOUT: 30000

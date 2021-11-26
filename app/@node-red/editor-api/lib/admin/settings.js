@@ -54,7 +54,7 @@ module.exports = {
   },
   runtimeSettings(req, res) {
     const opts = {
-      tenant: req.baseUrl.split("/")[2],
+      tenant: req.tenant,
       user: req.user,
     };
     runtimeAPI.settings.getRuntimeSettings(opts).then((result) => {

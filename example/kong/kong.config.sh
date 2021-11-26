@@ -78,17 +78,15 @@ createRoute "${1}" "${1}_route" "${3}" "${4}"
 }
 
 # service: gui
-
 createEndpoint "gui" "http://gui:80"  '"/"' "false"
 
 # service: gui-v2
-
 createEndpoint "gui-v2" "http://gui-v2:80"  '"/v2"' "true"
 
+
 # service: flowbroker-ui
-
+# createEndpoint "flowbroker-ui" "http://172.19.0.1:2880"  '"/nodered"' "false"
 createEndpoint "flowbroker-ui" "http://flowbroker-ui:2880"  '"/nodered"' "false"
-
 
 # service: data-broker
 

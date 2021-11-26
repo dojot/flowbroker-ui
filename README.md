@@ -51,12 +51,12 @@ Also it been blocked access to sensitive information from other tenants if user 
 
 The Flowbroker-UI depends of the following Dojot services:
 
-    - Auth
-    - DeviceManager
-    - DataBroker
-    - Flowbroker
-    - Flowbroker-context-manager
-    - Kafka
+- Auth
+- DeviceManager
+- DataBroker
+- Flowbroker
+- Flowbroker-context-manager
+- Kafka
 
 ## Roadmap
 
@@ -79,7 +79,7 @@ We propose some improvements to the Flowbroker-UI, aimed at improving the user e
 ## Running the service
 
 Before using the UI, you need to login through Dojot's GUI-V1.
-After login, **Flowbroker UI** is available at the address "http:<dojot-adress>:<port>/nodered/<tenant-name>/".
+After login, **Flowbroker UI** is available at the address "http:<dojot-adress>:<port>/nodered/".
 
 ### Configurations
 

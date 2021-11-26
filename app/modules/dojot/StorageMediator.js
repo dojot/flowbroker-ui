@@ -30,10 +30,7 @@ const storageMediator = {
    */
   getFlows: function async(tenant) {
     const dojotHandler = MainStorage.getByTenant(tenant, "dojotHandler");
-    return (async () => {
-      await dojotHandler.init();
-      return dojotHandler.getFlows();
-    })();
+    return dojotHandler.getFlows();
   },
 
   /**

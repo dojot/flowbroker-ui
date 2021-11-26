@@ -19,6 +19,7 @@
   "rules": {
     "func-names": 1,
     "implicit-arrow-linebreak": "off",
+    "global-require": "off",
     "no-underscore-dangle": "off",
     "security/detect-object-injection": "off",
     "no-param-reassign": "off",

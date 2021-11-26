@@ -92,11 +92,9 @@ function init(settings, _server, storage, runtimeAPI) {
   }
 
   // Editor
-  if (!settings.disableEditor) {
-    repo.editor = importFresh("./editor");
-    const editorApp = repo.editor.init(repo.server, settings, runtimeAPI);
-    repo.adminApp.use(editorApp);
-  }
+  repo.editor = importFresh("./editor");
+  const editorApp = repo.editor.init(repo.server, settings, runtimeAPI);
+  repo.adminApp.use(editorApp);
 
   if (settings.httpAdminCors) {
     var corsHandler = cors(settings.httpAdminCors);
@@ -106,8 +104,10 @@ function init(settings, _server, storage, runtimeAPI) {
   logger.info("Requesting initialization for Admin-API to be set in express service.", {
     rid: `tenant/${runtimeAPI.tenant}`,
   });
-  const adminApiApp = importFresh("./admin").init(settings, runtimeAPI);
-  repo.adminApp.use(adminApiApp);
+
+  const adminApiApp = importFresh("./admin").init(settings, runtimeAPI, editorApp);
+  // ${repo.tenant}
+  repo.adminApp.use("/", adminApiApp);
 }
 
 /**

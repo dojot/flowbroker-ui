@@ -32,7 +32,6 @@ module.exports = () => ({
     }
 
     const err = new createError.Unauthorized();
-
     if (req.headers.authorization) {
       const authHeader = req.headers.authorization.split(" ");
 
@@ -56,14 +55,8 @@ module.exports = () => ({
           err.message = "Missing Tenant information.";
           return next(err);
         }
+        req.tenant = payload.service;
 
-        [, , req.tenant] = req.path.split("/");
-        req.tokenTenant = payload.service;
-        if (req.tenant !== req.tokenTenant) {
-          err.message = "Missmatching tenants.";
-          err.code = 412;
-          return next(err);
-        }
         return next();
       }
       err.message = "Invalid Dojot JWT Token.";

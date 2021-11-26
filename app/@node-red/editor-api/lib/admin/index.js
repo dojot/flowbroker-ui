@@ -30,7 +30,7 @@ const apiUtil = require("../util");
 const logger = new Logger("flowbroker-ui:editor-api/admin");
 
 module.exports = {
-  init(settings, runtimeAPI) {
+  init(settings, runtimeAPI, editorApp) {
     logger.debug(" Initializing Editor-api/admin...", {
       rid: `tenant/${runtimeAPI.tenant}`,
     });
@@ -65,7 +65,7 @@ module.exports = {
     adminApp.put("/flow/:id", needsPermission("flows.write"), flow.put, apiUtil.errorHandler);
 
     // Nodes
-    adminApp.get("/nodes", needsPermission("nodes.read"), nodes.getAll, apiUtil.errorHandler);
+    editorApp.get("/nodes", needsPermission("nodes.read"), nodes.getAll, apiUtil.errorHandler);
 
     if (
       !settings.externalModules ||
@@ -79,7 +79,7 @@ module.exports = {
       ) {
         const multer = require("multer");
         const upload = multer({ storage: multer.memoryStorage() });
-        adminApp.post(
+        editorApp.post(
           "/nodes",
           needsPermission("nodes.write"),
           upload.single("tarball"),
@@ -87,46 +87,46 @@ module.exports = {
           apiUtil.errorHandler,
         );
       } else {
-        adminApp.post("/nodes", needsPermission("nodes.write"), nodes.post, apiUtil.errorHandler);
+        editorApp.post("/nodes", needsPermission("nodes.write"), nodes.post, apiUtil.errorHandler);
       }
     }
-    adminApp.get(
+    editorApp.get(
       /^\/nodes\/messages/,
       needsPermission("nodes.read"),
       nodes.getModuleCatalogs,
       apiUtil.errorHandler,
     );
-    adminApp.get(
+    editorApp.get(
       /^\/nodes\/((@[^\/]+\/)?[^\/]+\/[^\/]+)\/messages/,
       needsPermission("nodes.read"),
       nodes.getModuleCatalog,
       apiUtil.errorHandler,
     );
-    adminApp.get(
+    editorApp.get(
       /^\/nodes\/((@[^\/]+\/)?[^\/]+)$/,
       needsPermission("nodes.read"),
       nodes.getModule,
       apiUtil.errorHandler,
     );
-    adminApp.put(
+    editorApp.put(
       /^\/nodes\/((@[^\/]+\/)?[^\/]+)$/,
       needsPermission("nodes.write"),
       nodes.putModule,
       apiUtil.errorHandler,
     );
-    adminApp.delete(
+    editorApp.delete(
       /^\/nodes\/((@[^\/]+\/)?[^\/]+)$/,
       needsPermission("nodes.write"),
       nodes.delete,
       apiUtil.errorHandler,
     );
-    adminApp.get(
+    editorApp.get(
       /^\/nodes\/((@[^\/]+\/)?[^\/]+)\/([^\/]+)$/,
       needsPermission("nodes.read"),
       nodes.getSet,
       apiUtil.errorHandler,
     );
-    adminApp.put(
+    editorApp.put(
       /^\/nodes\/((@[^\/]+\/)?[^\/]+)\/([^\/]+)$/,
       needsPermission("nodes.write"),
       nodes.putSet,
@@ -174,7 +174,7 @@ module.exports = {
       apiUtil.errorHandler,
     );
 
-    adminApp.get(
+    editorApp.get(
       "/settings",
       needsPermission("settings.read"),
       info.runtimeSettings,
@@ -182,8 +182,13 @@ module.exports = {
     );
 
     // Plugins
-    adminApp.get("/plugins", needsPermission("plugins.read"), plugins.getAll, apiUtil.errorHandler);
-    adminApp.get(
+    editorApp.get(
+      "/plugins",
+      needsPermission("plugins.read"),
+      plugins.getAll,
+      apiUtil.errorHandler,
+    );
+    editorApp.get(
       "/plugins/messages",
       needsPermission("plugins.read"),
       plugins.getCatalogs,
