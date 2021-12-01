@@ -28,7 +28,7 @@ RUN apk add --no-cache --virtual .build-deps \
 # Install app dependencies
 COPY package.json package.json
 COPY package-lock.json package-lock.json
-COPY red.js ./red.js
+COPY index.js ./index.js
 COPY Gruntfile.js ./Gruntfile.js
 
 COPY app ./app

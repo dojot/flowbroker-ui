@@ -55,11 +55,7 @@ module.exports = function (grunt) {
         reporter: "spec",
       },
       all: {
-        src: [
-          "test/unit/_spec.js",
-          "test/unit/**/*_spec.js",
-          "test/nodes/**/*_spec.js",
-        ],
+        src: ["test/unit/_spec.js", "test/unit/**/*_spec.js", "test/nodes/**/*_spec.js"],
       },
       core: { src: ["test/unit/_spec.js", "test/unit/**/*_spec.js"] },
       nodes: { src: ["test/nodes/**/*_spec.js"] },
@@ -344,7 +340,7 @@ module.exports = function (grunt) {
     nodemon: {
       /* uses .nodemonignore */
       dev: {
-        script: "red.js",
+        script: "index.js",
         options: {
           args: nodemonArgs,
           ext: "js,html,json",
@@ -555,28 +551,24 @@ module.exports = function (grunt) {
   grunt.loadNpmTasks("grunt-mkdir");
   grunt.loadNpmTasks("grunt-simple-nyc");
 
-  grunt.registerMultiTask(
-    "nodemon",
-    "Runs a nodemon monitor of your node.js server.",
-    function () {
-      const nodemon = require("nodemon");
-      this.async();
-      const options = this.options();
-      options.script = this.data.script;
-      let callback;
-      if (options.callback) {
-        callback = options.callback;
-        delete options.callback;
-      } else {
-        callback = function (nodemonApp) {
-          nodemonApp.on("log", (event) => {
-            console.log(event.colour);
-          });
-        };
-      }
-      callback(nodemon(options));
-    },
-  );
+  grunt.registerMultiTask("nodemon", "Runs a nodemon monitor of your node.js server.", function () {
+    const nodemon = require("nodemon");
+    this.async();
+    const options = this.options();
+    options.script = this.data.script;
+    let callback;
+    if (options.callback) {
+      callback = options.callback;
+      delete options.callback;
+    } else {
+      callback = function (nodemonApp) {
+        nodemonApp.on("log", (event) => {
+          console.log(event.colour);
+        });
+      };
+    }
+    callback(nodemon(options));
+  });
 
   grunt.registerMultiTask("attachCopyright", function () {
     const files = this.data.src;
@@ -647,11 +639,7 @@ module.exports = function (grunt) {
       generatePublishScript().then((output) => {
         grunt.log.writeln(output);
 
-        const filePath = path.join(
-          grunt.config.get("paths.dist"),
-          "modules",
-          "publish.sh",
-        );
+        const filePath = path.join(grunt.config.get("paths.dist"), "modules", "publish.sh");
         grunt.file.write(filePath, output);
 
         done();
@@ -678,34 +666,27 @@ module.exports = function (grunt) {
     ["build", "verifyPackageDependencies", "jshint:editor", "simplemocha:all"],
   );
 
-  grunt.registerTask(
-    "test-core",
-    "Runs code style check and unit tests on core runtime code",
-    ["build", "nyc:core"],
-  );
-
-  grunt.registerTask("test-editor", "Runs code style check on editor code", [
-    "jshint:editor",
+  grunt.registerTask("test-core", "Runs code style check and unit tests on core runtime code", [
+    "build",
+    "nyc:core",
   ]);
+
+  grunt.registerTask("test-editor", "Runs code style check on editor code", ["jshint:editor"]);
 
   if (!fs.existsSync(path.join("node_modules", "grunt-webdriver"))) {
-    grunt.registerTask(
-      "test-ui",
-      "Builds editor content then runs unit tests on editor ui",
-      ["verifyUiTestDependencies"],
-    );
+    grunt.registerTask("test-ui", "Builds editor content then runs unit tests on editor ui", [
+      "verifyUiTestDependencies",
+    ]);
   } else {
-    grunt.registerTask(
-      "test-ui",
-      "Builds editor content then runs unit tests on editor ui",
-      ["verifyUiTestDependencies", "build", "jshint:editor", "webdriver:all"],
-    );
+    grunt.registerTask("test-ui", "Builds editor content then runs unit tests on editor ui", [
+      "verifyUiTestDependencies",
+      "build",
+      "jshint:editor",
+      "webdriver:all",
+    ]);
   }
 
-  grunt.registerTask("test-nodes", "Runs unit tests on core nodes", [
-    "build",
-    "nyc:nodes",
-  ]);
+  grunt.registerTask("test-nodes", "Runs unit tests on core nodes", ["build", "nyc:nodes"]);
 
   grunt.registerTask("build", "Builds editor content", [
     "clean:build",
@@ -749,10 +730,7 @@ module.exports = function (grunt) {
     "npm-command",
   ]);
 
-  grunt.registerTask("coverage", "Run Istanbul code test coverage task", [
-    "build",
-    "nyc:all",
-  ]);
+  grunt.registerTask("coverage", "Run Istanbul code test coverage task", ["build", "nyc:all"]);
 
   grunt.registerTask("docs", "Generates API documentation", ["jsdoc"]);
 };
