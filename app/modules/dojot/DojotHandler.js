@@ -47,8 +47,10 @@ class DojotHandler {
       const token = await WebUtils.createTokenGen().generate({
         tenant: this.tenant,
         payload: {
+          iss: "generic_user",
           username: "generic_user",
           service: this.tenant,
+          profile: this.tenant,
         },
       });
 
@@ -89,6 +91,12 @@ class DojotHandler {
         })
         .catch((err) => {
           this.logger.error(`getFlows - Requesting error: ${err.toString()}`, {
+            rid: `tenant/${this.tenant}`,
+          });
+          this.logger.error(`Using URL: ${this.configs.flow.url}`, {
+            rid: `tenant/${this.tenant}`,
+          });
+          this.logger.error(`with payload: ${JSON.stringify(this.defaultHeader)}`, {
             rid: `tenant/${this.tenant}`,
           });
           reject(err.toString());

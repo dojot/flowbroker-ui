@@ -15,7 +15,7 @@ jobs:
     if: contains(github.event.head_commit.message, 'ci skip') == false # if the commit message has ci skip, doesn't run anything because needs
     strategy:
       matrix:
-        node-version: [12.x]
+        node-version: [14.x]
     steps:
       - name: checkout
         uses: actions/checkout@v2

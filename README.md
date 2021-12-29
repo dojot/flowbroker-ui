@@ -82,6 +82,14 @@ We propose some improvements to the Flowbroker-UI, aimed at improving the user e
 Before using the UI, you need to login through Dojot's GUI-V1.
 After login, **Flowbroker UI** is available at the address "http:<dojot-adress>:<port>/nodered/".
 
+### Developing the service
+
+It's not possible to run the service locally during development (since a fake JWT token will fail in the Kong validation), therefore it must be run with docker-compose, as shown below:
+
+```shell
+ sudo docker-compose up --build flowbroker-ui 
+```
+
 ### Configurations
 
 Before running the **Flowbroker UI** service within your environment, make sure you configure the
