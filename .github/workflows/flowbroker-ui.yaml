@@ -34,13 +34,6 @@ jobs:
           npm run build
           npm run check-licenses
 
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v1
-        with:
-          file: coverage/lcov.info # Created when 'npm test' is executed
-          flags: flowbroker-ui # Flags allow you to isolate coverage reports for different tests
-          name: flowbroker-ui # Custom defined name for the upload
-
   docker-hub:
     needs: unit-tests
     name: (flowbroker-ui) Build and Publish image to DockerHub #  path to help identify in Status checks each job
