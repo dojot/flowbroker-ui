@@ -160,7 +160,7 @@ RED.subflow = (function () {
     return { subflowInputs: [removedInput], links: removedInputLinks };
   }
 
-  function addSubflowOutput(id) {
+  function addSubflowOutput() {
     const subflow = RED.nodes.subflow(RED.workspaces.active());
     const position = findAvailableSubflowIOPosition(subflow, false);
 
@@ -210,7 +210,7 @@ RED.subflow = (function () {
     }
     let removedLinks = [];
     removedSubflowOutputs.sort((a, b) => b.i - a.i);
-    for (i = 0; i < removedSubflowOutputs.length; i++) {
+    for (let i = 0; i < removedSubflowOutputs.length; i++) {
       var output = removedSubflowOutputs[i];
       activeSubflow.out.splice(output.i, 1);
       var subflowRemovedLinks = [];
@@ -260,7 +260,7 @@ RED.subflow = (function () {
     const wasDirty = RED.nodes.dirty();
     const wasChanged = subflow.changed;
     subflow.changed = true;
-    const result = refresh(true);
+    // const result = refresh(true);
     const historyEvent = {
       t: "edit",
       node: subflow,
@@ -1675,7 +1675,7 @@ RED.subflow = (function () {
      */
   function buildEnvUI(uiContainer, envList, node) {
     uiContainer.empty();
-    const elementID = 0;
+    // const elementID = 0;
     for (let i = 0; i < envList.length; i++) {
       const tenv = envList[i];
       if (tenv.ui && tenv.ui.type === "hide") {
@@ -1961,7 +1961,7 @@ RED.subflow = (function () {
   }
 
   function setupInputValidation(input, validator) {
-    let errorTip;
+    // let errorTip;
     let validateTimeout;
 
     const validateFunction = function () {
