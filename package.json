@@ -135,7 +135,7 @@
     "bcrypt": "5.0.1"
   },
   "devDependencies": {
-    "apache2-license-checker": "^1.0.0",
+    "@bbc/apache2-license-checker": "^1.1.4",
     "dompurify": "2.2.9",
     "eslint": "^7.22.0",
     "eslint-config-airbnb-base": "^14.2.1",
