@@ -1,7 +1,7 @@
 # =====================
 #     Base Image (LTS)
 # =====================
-FROM node:14.17-alpine AS base
+FROM node:14.18-alpine AS base
 
 # Create app directory
 WORKDIR /opt/flowbroker-ui
@@ -15,7 +15,7 @@ RUN apk --no-cache add \
     cyrus-sasl-dev \
     openssl-dev \
     make \
-    python
+    python3
 
 RUN apk add --no-cache --virtual .build-deps \
     gcc \
@@ -41,7 +41,7 @@ RUN npm run build
 # =====================
 #   Production Image
 # =====================
-FROM node:14.17-alpine
+FROM node:14.18-alpine
 
 WORKDIR /opt/flowbroker-ui
 

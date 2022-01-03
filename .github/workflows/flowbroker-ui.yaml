@@ -24,12 +24,16 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: ${{ matrix.node-version }}
+      
+      - name: Upgrade NPM
+        run: npm install -g npm
 
       - name: npm install, build, and check-licenses
         run: |
           npm ci
           npm run build
           npm run check-licenses
+
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v1
         with:
