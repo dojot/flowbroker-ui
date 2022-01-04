@@ -180,12 +180,14 @@
     "template": {
         "template": "template",
         "label": {
+            "name":"Name",
             "template": "Template",
             "property": "Property",
             "format": "Syntax Highlight",
             "syntax": "Format",
             "output": "Output as",
-            "mustache": "Mustache template",
+            "handlebars":"Handlebars template",
+            "mustache": "Mustache template (deprecated)",
             "plain": "Plain text",
             "json": "Parsed JSON",
             "yaml": "Parsed YAML",
@@ -940,28 +942,27 @@
                 "nooverride": "Warning: msg properties can no longer override set node properties. See bit.ly/nr-override-msg-props"
             }
         },
-        "switch": {
-            "label": {
-                "property": "Property",
-                "rule": "rule"
-            },
-            "and": "and",
-            "checkall": "checking all rules",
-            "stopfirst": "stopping after first match",
-            "ignorecase": "ignore case",
-            "rules": {
-                "btwn": "is between",
-                "cont": "contains",
-                "regex": "matches regex",
-                "true": "is true",
-                "false": "is false",
-                "null": "is null",
-                "nnull": "is not null",
-                "else": "otherwise"
-            },
-            "errors": {
-                "invalid-expr": "Invalid expression: __error__"
-            }
+        "label": {
+            "name:":"Name",
+            "property": "Property",
+            "rule": "rule"
+        },
+        "and": "and",
+        "checkall": "checking all rules",
+        "stopfirst": "stopping after first match",
+        "ignorecase": "ignore case",
+        "rules": {
+            "btwn": "is between",
+            "cont": "contains",
+            "regex": "matches regex",
+            "true": "is true",
+            "false": "is false",
+            "null": "is null",
+            "nnull": "is not null",
+            "else": "otherwise"
+        },
+        "errors": {
+            "invalid-expr": "Invalid expression: __error__"
         }
     },
     "change": {
