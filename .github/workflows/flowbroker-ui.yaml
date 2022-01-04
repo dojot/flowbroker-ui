@@ -5,8 +5,6 @@ on:
   create:
   push:
   pull_request:
-#     paths:
-#       - "./**"
 
 jobs:
   unit-tests:
@@ -56,6 +54,5 @@ jobs:
           name: ${{ steps.get_owner.outputs.owner }}/flowbroker-ui
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
-          workdir: /
           buildoptions: " --label commit_sha_dojot=${{ github.sha }} " # label with commit that built image
           tag_names: true # tag will be based in branch name or tag name
