@@ -5,8 +5,6 @@ on:
   create:
   push:
   pull_request:
-#     paths:
-#       - "./**"
 
 jobs:
   unit-tests:
